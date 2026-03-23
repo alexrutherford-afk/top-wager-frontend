@@ -6,7 +6,7 @@ import { useAuth } from '@/context/AuthContext';
 import { MOCK_TRANSACTIONS, PAYMENT_METHODS } from '@/data/mockUser';
 
 // ── Shared styles ─────────────────────────────────────────────────────────────
-const INPUT = 'w-full rounded-xl border border-white/10 bg-[#161616] px-4 py-3 text-sm text-white placeholder-white/20 outline-none focus:border-[#F5A623]/50 transition-colors';
+const INPUT = 'w-full rounded-xl border border-white/10 bg-[#1A2332] px-4 py-3 text-sm text-white placeholder-white/20 outline-none focus:border-[#F5A623]/50 transition-colors';
 const BTN_PRIMARY = 'w-full rounded-xl py-3.5 text-sm font-black text-[#0A0E14] transition-opacity hover:opacity-90';
 const BTN_SECONDARY = 'flex-1 rounded-xl border border-white/10 py-3 text-sm font-medium text-white/60 hover:bg-white/5 transition-colors';
 
@@ -31,12 +31,12 @@ function DepositTab() {
 
   if (step === 'success') return (
     <div className="flex flex-col items-center py-10 text-center px-4">
-      <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full" style={{ background: 'rgba(7,120,189,0.2)', border: '2px solid #0560A0' }}>
+      <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full" style={{ background: 'rgba(26,92,56,0.2)', border: '2px solid #2D7A50' }}>
         <span className="text-3xl">✅</span>
       </div>
       <h3 className="text-xl font-black text-white mb-1">Deposit successful!</h3>
-      <p className="text-sm mb-1" style={{ color: '#888888' }}>€{amountNum.toFixed(2)} added to your account</p>
-      <p className="text-xs mb-6" style={{ color: '#666666' }}>via {method.label}{method.last4 ? ` •••• ${method.last4}` : ''}</p>
+      <p className="text-sm mb-1" style={{ color: '#7A95B0' }}>€{amountNum.toFixed(2)} added to your account</p>
+      <p className="text-xs mb-6" style={{ color: '#5A7090' }}>via {method.label}{method.last4 ? ` •••• ${method.last4}` : ''}</p>
       <div className="flex gap-3 w-full max-w-xs">
         <button onClick={() => { setStep('form'); setAmount(''); }} className={BTN_SECONDARY}>Deposit again</button>
         <Link href="/" className="flex-1 rounded-xl py-3 text-sm font-black text-center text-[#0A0E14]" style={{ background: '#F5A623' }}>Play now</Link>
@@ -47,7 +47,7 @@ function DepositTab() {
   if (step === 'confirm') return (
     <div className="space-y-4 p-4">
       <h3 className="font-black text-white">Confirm deposit</h3>
-      <div className="rounded-xl p-4 space-y-2.5" style={{ background: '#161616' }}>
+      <div className="rounded-xl p-4 space-y-2.5" style={{ background: '#1A2332' }}>
         {[
           { label: 'Amount', value: `€${amountNum.toFixed(2)}` },
           { label: 'Payment method', value: `${method.label}${method.last4 ? ` •••• ${method.last4}` : ''}` },
@@ -55,7 +55,7 @@ function DepositTab() {
           { label: 'Fee', value: 'Free' },
         ].map((r) => (
           <div key={r.label} className="flex justify-between text-sm">
-            <span style={{ color: '#666666' }}>{r.label}</span>
+            <span style={{ color: '#5A7090' }}>{r.label}</span>
             <span className="font-semibold text-white">{r.value}</span>
           </div>
         ))}
@@ -82,7 +82,7 @@ function DepositTab() {
     <div className="space-y-5 p-4">
       {/* Payment methods */}
       <div>
-        <p className="mb-2 text-xs font-bold uppercase tracking-wider" style={{ color: '#666666' }}>Payment method</p>
+        <p className="mb-2 text-xs font-bold uppercase tracking-wider" style={{ color: '#5A7090' }}>Payment method</p>
         <div className="grid grid-cols-2 gap-2">
           {PAYMENT_METHODS.map((pm) => (
             <button
@@ -90,16 +90,16 @@ function DepositTab() {
               onClick={() => setSelectedMethod(pm.id)}
               className="flex items-center gap-3 rounded-xl border p-3 text-left transition-colors"
               style={{
-                background: selectedMethod === pm.id ? 'rgba(7,120,189,0.2)' : '#161616',
-                borderColor: selectedMethod === pm.id ? '#0560A0' : 'rgba(255,255,255,0.08)',
+                background: selectedMethod === pm.id ? 'rgba(26,92,56,0.2)' : '#1A2332',
+                borderColor: selectedMethod === pm.id ? '#2D7A50' : 'rgba(255,255,255,0.08)',
               }}
             >
               <span className="text-xl">{pm.icon}</span>
               <div className="min-w-0">
                 <p className="truncate text-xs font-bold text-white">{pm.label}</p>
-                {pm.last4 && <p className="text-[10px]" style={{ color: '#666666' }}>•••• {pm.last4}</p>}
+                {pm.last4 && <p className="text-[10px]" style={{ color: '#5A7090' }}>•••• {pm.last4}</p>}
               </div>
-              {selectedMethod === pm.id && <span className="ml-auto text-xs font-black" style={{ color: '#1A9FE0' }}>✓</span>}
+              {selectedMethod === pm.id && <span className="ml-auto text-xs font-black" style={{ color: '#3A9E67' }}>✓</span>}
             </button>
           ))}
         </div>
@@ -107,9 +107,9 @@ function DepositTab() {
 
       {/* Amount */}
       <div>
-        <p className="mb-2 text-xs font-bold uppercase tracking-wider" style={{ color: '#666666' }}>Amount</p>
+        <p className="mb-2 text-xs font-bold uppercase tracking-wider" style={{ color: '#5A7090' }}>Amount</p>
         <div className="relative mb-2">
-          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm font-black" style={{ color: '#666666' }}>€</span>
+          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm font-black" style={{ color: '#5A7090' }}>€</span>
           <input
             type="number"
             min={10}
@@ -126,8 +126,8 @@ function DepositTab() {
               onClick={() => setAmount(String(a))}
               className="rounded-lg py-2 text-xs font-bold transition-colors"
               style={{
-                background: amount === String(a) ? '#F5A623' : '#161616',
-                color: amount === String(a) ? '#0A0E14' : '#888888',
+                background: amount === String(a) ? '#F5A623' : '#1A2332',
+                color: amount === String(a) ? '#0A0E14' : '#7A95B0',
                 border: amount === String(a) ? 'none' : '1px solid rgba(255,255,255,0.08)',
               }}
             >
@@ -135,12 +135,12 @@ function DepositTab() {
             </button>
           ))}
         </div>
-        <p className="mt-1.5 text-xs" style={{ color: '#666666' }}>Min. €10 · Max. €10,000</p>
+        <p className="mt-1.5 text-xs" style={{ color: '#5A7090' }}>Min. €10 · Max. €10,000</p>
       </div>
 
       {/* Promo code */}
       <div>
-        <p className="mb-2 text-xs font-bold uppercase tracking-wider" style={{ color: '#666666' }}>Promo code (optional)</p>
+        <p className="mb-2 text-xs font-bold uppercase tracking-wider" style={{ color: '#5A7090' }}>Promo code (optional)</p>
         {/* TODO: Backend — validate promo code via POST /api/promos/validate */}
         <input type="text" placeholder="Enter promo code" className={INPUT} />
       </div>
@@ -178,13 +178,13 @@ function WithdrawTab() {
 
   if (step === 'success') return (
     <div className="flex flex-col items-center py-10 text-center px-4">
-      <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full" style={{ background: 'rgba(7,120,189,0.2)', border: '2px solid #0560A0' }}>
+      <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full" style={{ background: 'rgba(26,92,56,0.2)', border: '2px solid #2D7A50' }}>
         <span className="text-3xl">✅</span>
       </div>
       <h3 className="text-xl font-black text-white mb-1">Withdrawal requested!</h3>
-      <p className="text-sm mb-1" style={{ color: '#888888' }}>€{amountNum.toFixed(2)} is being processed</p>
-      <p className="text-xs mb-1" style={{ color: '#666666' }}>to {method.label}{method.last4 ? ` •••• ${method.last4}` : ''}</p>
-      <p className="text-xs mb-6" style={{ color: '#666666' }}>Expected in 1–3 business days</p>
+      <p className="text-sm mb-1" style={{ color: '#7A95B0' }}>€{amountNum.toFixed(2)} is being processed</p>
+      <p className="text-xs mb-1" style={{ color: '#5A7090' }}>to {method.label}{method.last4 ? ` •••• ${method.last4}` : ''}</p>
+      <p className="text-xs mb-6" style={{ color: '#5A7090' }}>Expected in 1–3 business days</p>
       <button onClick={() => { setStep('form'); setAmount(''); }} className="rounded-xl border border-white/10 px-6 py-2.5 text-sm text-white/60 hover:bg-white/5">
         Done
       </button>
@@ -194,7 +194,7 @@ function WithdrawTab() {
   if (step === 'confirm') return (
     <div className="space-y-4 p-4">
       <h3 className="font-black text-white">Confirm withdrawal</h3>
-      <div className="rounded-xl p-4 space-y-2.5" style={{ background: '#161616' }}>
+      <div className="rounded-xl p-4 space-y-2.5" style={{ background: '#1A2332' }}>
         {[
           { label: 'Amount', value: `€${amountNum.toFixed(2)}` },
           { label: 'To', value: `${method.label}${method.last4 ? ` •••• ${method.last4}` : ''}` },
@@ -203,7 +203,7 @@ function WithdrawTab() {
           { label: 'Balance after', value: `€${(available - amountNum).toFixed(2)}` },
         ].map((r) => (
           <div key={r.label} className="flex justify-between text-sm">
-            <span style={{ color: '#666666' }}>{r.label}</span>
+            <span style={{ color: '#5A7090' }}>{r.label}</span>
             <span className="font-semibold text-white">{r.value}</span>
           </div>
         ))}
@@ -220,9 +220,9 @@ function WithdrawTab() {
   return (
     <div className="space-y-5 p-4">
       {/* KYC status */}
-      <div className="flex items-center gap-2 rounded-xl px-3 py-2.5 border" style={{ background: 'rgba(7,120,189,0.1)', borderColor: 'rgba(45,122,80,0.3)' }}>
-        <span className="text-sm" style={{ color: '#1A9FE0' }}>✓</span>
-        <p className="text-xs font-semibold" style={{ color: '#1A9FE0' }}>
+      <div className="flex items-center gap-2 rounded-xl px-3 py-2.5 border" style={{ background: 'rgba(26,92,56,0.1)', borderColor: 'rgba(45,122,80,0.3)' }}>
+        <span className="text-sm" style={{ color: '#3A9E67' }}>✓</span>
+        <p className="text-xs font-semibold" style={{ color: '#3A9E67' }}>
           Identity verified · Withdrawals enabled
           {/* TODO: Backend — show real KYC status from /api/user/kyc */}
         </p>
@@ -230,7 +230,7 @@ function WithdrawTab() {
 
       {/* Withdraw to */}
       <div>
-        <p className="mb-2 text-xs font-bold uppercase tracking-wider" style={{ color: '#666666' }}>Withdraw to</p>
+        <p className="mb-2 text-xs font-bold uppercase tracking-wider" style={{ color: '#5A7090' }}>Withdraw to</p>
         <div className="grid grid-cols-2 gap-2">
           {PAYMENT_METHODS.map((pm) => (
             <button
@@ -238,18 +238,18 @@ function WithdrawTab() {
               onClick={() => setSelectedMethod(pm.id)}
               className="flex items-center gap-3 rounded-xl border p-3 text-left transition-colors"
               style={{
-                background: selectedMethod === pm.id ? 'rgba(7,120,189,0.2)' : '#161616',
-                borderColor: selectedMethod === pm.id ? '#0560A0' : 'rgba(255,255,255,0.08)',
+                background: selectedMethod === pm.id ? 'rgba(26,92,56,0.2)' : '#1A2332',
+                borderColor: selectedMethod === pm.id ? '#2D7A50' : 'rgba(255,255,255,0.08)',
               }}
             >
               <span className="text-xl">{pm.icon}</span>
               <div className="min-w-0">
                 <p className="truncate text-xs font-bold text-white">{pm.label}</p>
-                <p className="text-[10px]" style={{ color: '#666666' }}>
+                <p className="text-[10px]" style={{ color: '#5A7090' }}>
                   {pm.type === 'bank' ? '1–3 days' : pm.type === 'card' ? 'Up to 5 days' : 'Instant'}
                 </p>
               </div>
-              {selectedMethod === pm.id && <span className="ml-auto text-xs font-black" style={{ color: '#1A9FE0' }}>✓</span>}
+              {selectedMethod === pm.id && <span className="ml-auto text-xs font-black" style={{ color: '#3A9E67' }}>✓</span>}
             </button>
           ))}
         </div>
@@ -258,18 +258,18 @@ function WithdrawTab() {
       {/* Amount */}
       <div>
         <div className="mb-2 flex items-center justify-between">
-          <p className="text-xs font-bold uppercase tracking-wider" style={{ color: '#666666' }}>Amount</p>
-          <p className="text-xs" style={{ color: '#666666' }}>Available: <span className="font-bold text-white">€{available.toFixed(2)}</span></p>
+          <p className="text-xs font-bold uppercase tracking-wider" style={{ color: '#5A7090' }}>Amount</p>
+          <p className="text-xs" style={{ color: '#5A7090' }}>Available: <span className="font-bold text-white">€{available.toFixed(2)}</span></p>
         </div>
         <div className="relative mb-2">
-          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm font-black" style={{ color: '#666666' }}>€</span>
+          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm font-black" style={{ color: '#5A7090' }}>€</span>
           <input type="number" min={10} max={available} value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="0.00" className={INPUT + ' pl-8 text-lg font-black'} />
         </div>
         <div className="grid grid-cols-4 gap-1.5">
           {[50, 100, 200].filter(a => a <= available).map((a) => (
-            <button key={a} onClick={() => setAmount(String(a))} className="rounded-lg py-2 text-xs font-bold" style={{ background: amount === String(a) ? '#F5A623' : '#161616', color: amount === String(a) ? '#0A0E14' : '#888888', border: '1px solid rgba(255,255,255,0.08)' }}>€{a}</button>
+            <button key={a} onClick={() => setAmount(String(a))} className="rounded-lg py-2 text-xs font-bold" style={{ background: amount === String(a) ? '#F5A623' : '#1A2332', color: amount === String(a) ? '#0A0E14' : '#7A95B0', border: '1px solid rgba(255,255,255,0.08)' }}>€{a}</button>
           ))}
-          <button onClick={() => setAmount(String(available))} className="rounded-lg py-2 text-xs font-bold" style={{ background: amount === String(available) ? '#F5A623' : '#161616', color: amount === String(available) ? '#0A0E14' : '#888888', border: '1px solid rgba(255,255,255,0.08)' }}>Max</button>
+          <button onClick={() => setAmount(String(available))} className="rounded-lg py-2 text-xs font-bold" style={{ background: amount === String(available) ? '#F5A623' : '#1A2332', color: amount === String(available) ? '#0A0E14' : '#7A95B0', border: '1px solid rgba(255,255,255,0.08)' }}>Max</button>
         </div>
         {amountNum > available && <p className="mt-1 text-xs text-red-400">Exceeds available balance</p>}
       </div>
@@ -289,7 +289,7 @@ function WithdrawTab() {
 // ── Transactions tab ──────────────────────────────────────────────────────────
 const TX_ICON: Record<string, string> = { deposit: '⬇️', withdrawal: '⬆️', bonus: '🎁' };
 const TX_STATUS: Record<string, { label: string; color: string; bg: string }> = {
-  completed: { label: 'Completed', color: '#1A9FE0', bg: 'rgba(7,120,189,0.2)' },
+  completed: { label: 'Completed', color: '#3A9E67', bg: 'rgba(26,92,56,0.2)' },
   pending:   { label: 'Pending',   color: '#F5A623', bg: 'rgba(245,166,35,0.15)' },
   failed:    { label: 'Failed',    color: '#E84D1C', bg: 'rgba(232,77,28,0.15)' },
 };
@@ -306,32 +306,32 @@ function TransactionsTab() {
         {(['all', 'deposit', 'withdrawal', 'bonus'] as const).map((f) => (
           <button key={f} onClick={() => setFilter(f)}
             className="shrink-0 rounded-full px-4 py-1.5 text-xs font-bold capitalize transition-colors"
-            style={{ background: filter === f ? '#F5A623' : '#161616', color: filter === f ? '#0A0E14' : '#666666', border: filter === f ? 'none' : '1px solid rgba(255,255,255,0.08)' }}>
+            style={{ background: filter === f ? '#F5A623' : '#1A2332', color: filter === f ? '#0A0E14' : '#5A7090', border: filter === f ? 'none' : '1px solid rgba(255,255,255,0.08)' }}>
             {f === 'all' ? 'All' : f.charAt(0).toUpperCase() + f.slice(1) + 's'}
           </button>
         ))}
       </div>
 
       {/* Transaction list */}
-      <div className="rounded-xl overflow-hidden border border-white/[0.06]" style={{ background: '#111111' }}>
+      <div className="rounded-xl overflow-hidden border border-white/[0.06]" style={{ background: '#131B24' }}>
         {list.length === 0 ? (
-          <div className="py-10 text-center text-sm" style={{ color: '#666666' }}>No transactions found</div>
+          <div className="py-10 text-center text-sm" style={{ color: '#5A7090' }}>No transactions found</div>
         ) : (
           list.map((tx, i) => {
             const s = TX_STATUS[tx.status];
             return (
               <div key={tx.id} className={`flex items-center gap-3 px-4 py-3.5 ${i < list.length - 1 ? 'border-b border-white/[0.05]' : ''}`}>
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-lg" style={{ background: '#161616' }}>
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-lg" style={{ background: '#1A2332' }}>
                   {TX_ICON[tx.type]}
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold text-white truncate">{tx.method}</p>
-                  <p className="text-[10px]" style={{ color: '#666666' }}>
+                  <p className="text-[10px]" style={{ color: '#5A7090' }}>
                     {new Date(tx.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
                   </p>
                 </div>
                 <div className="text-right shrink-0">
-                  <p className={`text-sm font-black ${tx.amount > 0 ? '' : 'text-white'}`} style={tx.amount > 0 ? { color: '#1A9FE0' } : {}}>
+                  <p className={`text-sm font-black ${tx.amount > 0 ? '' : 'text-white'}`} style={tx.amount > 0 ? { color: '#3A9E67' } : {}}>
                     {tx.amount > 0 ? '+' : ''}€{Math.abs(tx.amount).toFixed(2)}
                   </p>
                   <span className="rounded-full px-2 py-0.5 text-[9px] font-bold" style={{ background: s.bg, color: s.color }}>{s.label}</span>
@@ -363,18 +363,18 @@ export default function WalletPage() {
       <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4 px-4 text-center">
         <span className="text-5xl">🔒</span>
         <h2 className="text-xl font-black">Sign in to access your wallet</h2>
-        <p className="text-sm" style={{ color: '#666666' }}>You need to be logged in to deposit, withdraw or view transactions.</p>
+        <p className="text-sm" style={{ color: '#5A7090' }}>You need to be logged in to deposit, withdraw or view transactions.</p>
         <Link href="/login" className="mt-2 rounded-xl px-8 py-3 text-sm font-black text-[#0A0E14]" style={{ background: '#F5A623' }}>Sign in</Link>
       </div>
     );
   }
 
   return (
-    <div className="pb-20 md:pb-6" style={{ background: '#0A0A0A', minHeight: '100vh' }}>
+    <div className="pb-20 md:pb-6" style={{ background: '#0D1117', minHeight: '100vh' }}>
 
       {/* Balance summary */}
-      <div className="px-4 py-5" style={{ background: 'linear-gradient(180deg, #111111, #0A0A0A)' }}>
-        <p className="mb-1 text-xs font-bold uppercase tracking-wider" style={{ color: '#666666' }}>Total balance</p>
+      <div className="px-4 py-5" style={{ background: 'linear-gradient(180deg, #131B24, #0D1117)' }}>
+        <p className="mb-1 text-xs font-bold uppercase tracking-wider" style={{ color: '#5A7090' }}>Total balance</p>
         <p className="text-4xl font-black text-white">
           €{(user.balance.cash + user.balance.bonus).toLocaleString('en-GB', { minimumFractionDigits: 2 })}
         </p>
@@ -386,26 +386,26 @@ export default function WalletPage() {
             { label: 'Bonus',   value: `€${user.balance.bonus.toFixed(2)}`,   color: '',                 note: 'Wagering req.', gold: true },
             { label: 'Pending', value: `€${user.balance.pending.toFixed(2)}`, color: '',                 note: 'Processing', amber: true },
           ].map((b) => (
-            <div key={b.label} className="rounded-xl p-3 border border-white/[0.06]" style={{ background: '#161616' }}>
-              <p className="text-[9px] font-bold uppercase tracking-wider mb-1" style={{ color: '#666666' }}>{b.label}</p>
+            <div key={b.label} className="rounded-xl p-3 border border-white/[0.06]" style={{ background: '#1A2332' }}>
+              <p className="text-[9px] font-bold uppercase tracking-wider mb-1" style={{ color: '#5A7090' }}>{b.label}</p>
               <p className={`text-base font-black ${b.color}`} style={b.gold ? { color: '#F5A623' } : b.amber ? { color: '#F5A623', opacity: 0.7 } : {}}>
                 {b.value}
               </p>
-              <p className="text-[9px] mt-0.5" style={{ color: '#666666' }}>{b.note}</p>
+              <p className="text-[9px] mt-0.5" style={{ color: '#5A7090' }}>{b.note}</p>
             </div>
           ))}
         </div>
       </div>
 
       {/* Tab nav */}
-      <div className="sticky top-0 z-10 flex border-b border-white/[0.06]" style={{ background: '#111111' }}>
+      <div className="sticky top-0 z-10 flex border-b border-white/[0.06]" style={{ background: '#131B24' }}>
         {TABS.map((tab) => (
           <button
             key={tab.value}
             onClick={() => setActiveTab(tab.value)}
             className="flex flex-1 flex-col items-center gap-0.5 py-3 text-[11px] font-bold transition-colors"
             style={{
-              color: activeTab === tab.value ? '#F5A623' : '#666666',
+              color: activeTab === tab.value ? '#F5A623' : '#5A7090',
               borderBottom: activeTab === tab.value ? '2px solid #F5A623' : '2px solid transparent',
             }}
           >

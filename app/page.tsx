@@ -10,13 +10,13 @@ const fmt = (n: number) => n.toLocaleString();
 
 // ── Ticker ────────────────────────────────────────────────────────────────────
 function Ticker({ loggedIn, firstName }: { loggedIn: boolean; firstName?: string }) {
-  const guestText = `Back Yourself — Join Castle Bet Free \u00a0•\u00a0 ✈️ Aviator Weekly Prize: KES 25,000 \u00a0•\u00a0 💰 100% Welcome Bonus up to €500 \u00a0•\u00a0 ⚡ Instant withdrawals \u00a0•\u00a0 🎰 1,000+ Casino Games \u00a0\u00a0\u00a0\u00a0\u00a0`;
+  const guestText = `Back Yourself — Join TopWager Free \u00a0•\u00a0 ✈️ Aviator Weekly Prize: KES 25,000 \u00a0•\u00a0 💰 100% Welcome Bonus up to €500 \u00a0•\u00a0 ⚡ Instant withdrawals \u00a0•\u00a0 🎰 1,000+ Casino Games \u00a0\u00a0\u00a0\u00a0\u00a0`;
   const authText = `Welcome back, ${firstName}! 🎉 Your 10% cashback is ready \u00a0•\u00a0 ✈️ Aviator Weekly Prize: KES 25,000 \u00a0•\u00a0 🎰 New: 50 free spins available \u00a0•\u00a0 🏆 VIP Gold — keep climbing! \u00a0\u00a0\u00a0\u00a0\u00a0`;
   const text = loggedIn ? authText : guestText;
   return (
     <div
       className="flex items-center gap-2 px-3 py-1.5 text-[10px] font-semibold text-white overflow-hidden"
-      style={{ background: 'linear-gradient(90deg, #0778BD, #0560A0)' }}
+      style={{ background: 'linear-gradient(90deg, #1A5C38, #2D7A50)' }}
     >
       <span>{loggedIn ? '👋' : '🎉'}</span>
       <div className="flex-1 overflow-hidden">
@@ -66,7 +66,7 @@ const BANNERS_GUEST = [
     bg: 'linear-gradient(125deg,#0E0A00 0%,#1E1400 50%,#2A1C00 100%)',
     glow: 'radial-gradient(ellipse at 88% 42%,rgba(245,166,35,0.26) 0%,transparent 55%)',
     badge: { label: '🔥 Jackpot', style: { background:'rgba(232,77,28,0.18)', border:'1px solid rgba(232,77,28,0.4)', color:'#FF7A55' } },
-    heading: <>Mega Jackpot<br /><span style={{color:'#1A9FE0'}}>Growing Now</span></>,
+    heading: <>Mega Jackpot<br /><span style={{color:'#3A9E67'}}>Growing Now</span></>,
     sub: <strong style={{fontSize:20,color:'#F5A623',display:'block',marginBottom:4}}>€4,827,650</strong>,
     cta: { label: 'Spin Now →', href: '/?cat=jackpot', style: { background:'#F5A623', color:'#0A0E14', boxShadow:'0 4px 12px rgba(245,166,35,0.4)' } },
     art: <span style={{fontSize:64,filter:'drop-shadow(0 0 22px rgba(245,166,35,0.5))',opacity:0.88}}>🏆</span>,
@@ -84,7 +84,7 @@ function BannerCarousel() {
 
   const b = BANNERS_GUEST[active];
   return (
-    <div style={{ background: '#111111' }}>
+    <div style={{ background: '#131B24' }}>
       <div className="relative overflow-hidden" style={{ height: 160 }}>
         <div className="absolute inset-0" style={{ background: b.bg }} />
         <div className="absolute inset-0" style={{ background: b.glow }} />
@@ -96,14 +96,14 @@ function BannerCarousel() {
             {b.badge.label}
           </div>
           <div className="mb-1 text-xl font-black leading-tight text-white" style={{ maxWidth: 200, textShadow: '0 2px 10px rgba(0,0,0,0.5)' }}>{b.heading}</div>
-          <div className="mb-2.5 text-[10.5px] leading-relaxed" style={{ color: '#888888', maxWidth: 188 }}>{b.sub}</div>
+          <div className="mb-2.5 text-[10.5px] leading-relaxed" style={{ color: '#7A95B0', maxWidth: 188 }}>{b.sub}</div>
           <Link href={b.cta.href} className="inline-flex w-fit items-center rounded-full px-4 py-1.5 text-xs font-black" style={b.cta.style as React.CSSProperties}>
             {b.cta.label}
           </Link>
         </div>
       </div>
       {/* Dots */}
-      <div className="flex justify-center gap-1.5 py-2" style={{ background: '#111111' }}>
+      <div className="flex justify-center gap-1.5 py-2" style={{ background: '#131B24' }}>
         {BANNERS_GUEST.map((_, i) => (
           <button
             key={i}
@@ -169,7 +169,7 @@ const GAME_BADGE: Record<string, { label: string; bg: string; color: string }> =
   hot:    { label: 'HOT',     bg: '#E84D1C', color: 'white' },
   new:    { label: 'NEW',     bg: '#F5A623', color: '#0A0E14' },
   live:   { label: 'LIVE',    bg: '#E84D1C', color: 'white' },
-  top:    { label: 'TOP',     bg: '#0778BD', color: 'white' },
+  top:    { label: 'TOP',     bg: '#1A5C38', color: 'white' },
   jackpot:{ label: 'JACKPOT', bg: 'linear-gradient(90deg,#F5A623,#E8950F)', color: '#0A0E14' },
 };
 
@@ -202,7 +202,7 @@ function GameCard({ game }: { game: Game }) {
       {/* Hover overlay */}
       <div className="play-overlay absolute inset-0 flex flex-col items-center justify-center gap-1.5 bg-black/80">
         <p className="text-[10px] font-bold text-white text-center px-2 leading-tight">{game.name}</p>
-        <p className="text-[9px]" style={{ color: '#888888' }}>{game.provider}</p>
+        <p className="text-[9px]" style={{ color: '#7A95B0' }}>{game.provider}</p>
         <button className="mt-1 rounded-full px-4 py-1 text-[10px] font-black text-[#0A0E14] hover:opacity-90" style={{ background: '#F5A623' }}>
           Play Now
         </button>
@@ -223,12 +223,12 @@ function SectionHeader({ icon, title, href }: { icon: string; title: string; hre
   );
 }
 
-const Separator = () => <div className="h-[5px] border-t border-b border-white/[0.04]" style={{ background: '#111111' }} />;
+const Separator = () => <div className="h-[5px] border-t border-b border-white/[0.04]" style={{ background: '#131B24' }} />;
 
 // ── Welcome back bar ──────────────────────────────────────────────────────────
 function WelcomeBar({ name }: { name: string }) {
   return (
-    <div className="flex items-center justify-between border-b border-[rgba(7,120,189,0.3)] px-3 py-2" style={{ background: 'linear-gradient(90deg, rgba(7,120,189,0.3), rgba(7,120,189,0.1))' }}>
+    <div className="flex items-center justify-between border-b border-[rgba(26,92,56,0.3)] px-3 py-2" style={{ background: 'linear-gradient(90deg, rgba(26,92,56,0.3), rgba(26,92,56,0.1))' }}>
       <span className="text-xs font-semibold text-white">Welcome back, <span style={{ color: '#F5A623', fontWeight: 800 }}>{name}</span> 👋</span>
       <span className="flex items-center gap-1 text-[10px] font-semibold" style={{ color: '#5DE898' }}>🔥 5-day streak</span>
     </div>
@@ -250,7 +250,7 @@ export default function LobbyPage() {
   }).slice(0, 9);
 
   return (
-    <div className="pb-20 md:pb-6" style={{ background: '#0A0A0A' }}>
+    <div className="pb-20 md:pb-6" style={{ background: '#0D1117' }}>
 
       {/* Ticker */}
       <Ticker loggedIn={isLoggedIn} firstName={user?.firstName} />
@@ -265,19 +265,19 @@ export default function LobbyPage() {
       <JackpotBar />
 
       {/* Category pills */}
-      <div className="no-scrollbar flex gap-2 overflow-x-auto px-3 py-2" style={{ background: '#111111' }}>
+      <div className="no-scrollbar flex gap-2 overflow-x-auto px-3 py-2" style={{ background: '#131B24' }}>
         {CATS.map((cat) => (
           <button
             key={cat.value}
             onClick={() => setActiveCat(cat.value)}
             className="flex shrink-0 flex-col items-center gap-1 rounded-lg border px-4 py-2 transition-colors min-w-[60px]"
             style={{
-              background: activeCat === cat.value ? '#0778BD' : '#161616',
-              borderColor: activeCat === cat.value ? '#0560A0' : 'rgba(255,255,255,0.06)',
+              background: activeCat === cat.value ? '#1A5C38' : '#1A2332',
+              borderColor: activeCat === cat.value ? '#2D7A50' : 'rgba(255,255,255,0.06)',
             }}
           >
             <span className="text-lg leading-none">{cat.icon}</span>
-            <span className="text-[8.5px] font-bold uppercase tracking-wide" style={{ color: activeCat === cat.value ? 'white' : '#666666' }}>{cat.label}</span>
+            <span className="text-[8.5px] font-bold uppercase tracking-wide" style={{ color: activeCat === cat.value ? 'white' : '#5A7090' }}>{cat.label}</span>
           </button>
         ))}
       </div>
@@ -288,16 +288,16 @@ export default function LobbyPage() {
       <SectionHeader icon="🔴" title="Live Casino" href="/?cat=live" />
       <div className="no-scrollbar flex gap-2 overflow-x-auto px-3 pb-3">
         {LIVE_GAMES.map((g) => (
-          <div key={g.id} className="shrink-0 w-36 cursor-pointer overflow-hidden rounded-lg border border-white/[0.07]" style={{ background: '#161616' }}>
+          <div key={g.id} className="shrink-0 w-36 cursor-pointer overflow-hidden rounded-lg border border-white/[0.07]" style={{ background: '#1A2332' }}>
             <div className="relative flex h-20 items-center justify-center overflow-hidden" style={{ background: g.bg }}>
               <div className="absolute inset-0" style={{ background: 'radial-gradient(ellipse at 50% 40%,rgba(245,166,35,0.1) 0%,transparent 65%)' }} />
               <span className="text-[40px]" style={{ filter: 'drop-shadow(0 0 14px rgba(245,166,35,0.3))', zIndex: 1 }}>{g.icon}</span>
               <span className="absolute left-1.5 top-1.5 rounded px-1.5 py-px text-[7px] font-black text-white blink" style={{ background: '#E84D1C' }}>LIVE</span>
-              <span className="absolute bottom-1.5 right-1.5 rounded-full px-1.5 py-px text-[8px]" style={{ background: 'rgba(0,0,0,0.6)', color: '#888888' }}>👤 {g.players}</span>
+              <span className="absolute bottom-1.5 right-1.5 rounded-full px-1.5 py-px text-[8px]" style={{ background: 'rgba(0,0,0,0.6)', color: '#7A95B0' }}>👤 {g.players}</span>
             </div>
             <div className="px-2 py-1.5">
               <p className="text-[10.5px] font-black text-white truncate">{g.name}</p>
-              <p className="text-[8.5px]" style={{ color: '#666666' }}>{g.provider}</p>
+              <p className="text-[8.5px]" style={{ color: '#5A7090' }}>{g.provider}</p>
               <p className="mt-0.5 text-[8.5px] font-semibold" style={{ color: '#F5A623' }}>From {g.min}</p>
             </div>
           </div>
@@ -316,9 +316,9 @@ export default function LobbyPage() {
             onClick={() => setGameTab(t)}
             className="shrink-0 rounded-full border px-3 py-1 text-[10.5px] font-bold transition-colors"
             style={{
-              background: gameTab === t ? '#F5A623' : '#161616',
+              background: gameTab === t ? '#F5A623' : '#1A2332',
               borderColor: gameTab === t ? '#F5A623' : 'rgba(255,255,255,0.1)',
-              color: gameTab === t ? '#0A0E14' : '#666666',
+              color: gameTab === t ? '#0A0E14' : '#5A7090',
             }}
           >
             {t}

@@ -1,19 +1,19 @@
 @import "tailwindcss";
 
 :root {
-  --background: #000000;
+  --background: #07090F;
   --foreground: #FFFFFF;
-  --blue:       #0778BD;
-  --blue-mid:   #0560A0;
-  --blue-light: #1A9FE0;
+  --green:      #1A5C38;
+  --green-mid:  #2D7A50;
+  --green-light:#3A9E67;
   --gold:       #F5A623;
-  --red:        #E84D1C;
-  --dark:       #0A0A0A;
-  --dark2:      #111111;
-  --dark3:      #161616;
-  --muted:      #666666;
+  --orange:     #E84D1C;
+  --dark:       #0D1117;
+  --dark2:      #131B24;
+  --dark3:      #1A2332;
+  --muted:      #5A7090;
   --text:       #FFFFFF;
-  --text-dim:   #999999;
+  --text-dim:   #7A95B0;
 }
 
 @theme inline {
@@ -32,8 +32,8 @@ body {
 
 /* Custom scrollbar */
 ::-webkit-scrollbar { width: 5px; }
-::-webkit-scrollbar-track { background: #000000; }
-::-webkit-scrollbar-thumb { background: #161616; border-radius: 3px; }
+::-webkit-scrollbar-track { background: #07090F; }
+::-webkit-scrollbar-thumb { background: #1A2332; border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: #222222; }
 
 /* Hide scrollbar on horizontal strips */
