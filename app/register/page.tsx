@@ -11,7 +11,7 @@ const INPUT = (err?: string) =>
   `w-full rounded-xl border ${err ? 'border-red-500/40 bg-red-500/5' : 'border-white/[0.08] bg-[#1A2332]'} px-4 py-3 text-sm text-white placeholder-white/20 outline-none focus:border-[#F5A623]/40 transition-colors`;
 
 export default function RegisterPage() {
-  const { login } = useAuth();
+  const { register } = useAuth();
   const router = useRouter();
   const [step, setStep] = useState<Step>(1);
   const [loading, setLoading] = useState(false);
@@ -40,14 +40,24 @@ export default function RegisterPage() {
   const next = () => { if (validate()) setStep((s) => (s + 1) as Step); };
   const back = () => setStep((s) => (s - 1) as Step);
 
+  const [submitError, setSubmitError] = useState('');
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validate()) return;
     setLoading(true);
-    // TODO: Backend — POST /api/auth/register { email, password, firstName, lastName, dob, phone, currency }
-    await new Promise((r) => setTimeout(r, 1000));
-    login();
-    router.push('/');
+    setSubmitError('');
+    const { error } = await register(
+      form.email,
+      form.password,
+      `${form.firstName} ${form.lastName}`.trim()
+    );
+    setLoading(false);
+    if (error) { setSubmitError(error); return; }
+    // Registration successful — Supabase sends a confirmation email
+    // TODO: Backend — also save dob, phone, currency to profiles table
+    // POST /api/player/profile { dob, phone, currency }
+    router.push('/register/confirm');
   };
 
   const stepLabels = ['Account', 'Personal info', 'Confirm'];
@@ -165,6 +175,7 @@ export default function RegisterPage() {
                   </span>
                 </label>
                 {errors.agreedTerms && <p className="text-xs text-red-400">{errors.agreedTerms}</p>}
+                {submitError && <p className="rounded-lg border border-red-500/20 bg-red-500/10 px-3 py-2 text-xs text-red-400">{submitError}</p>}
                 <label className="flex cursor-pointer gap-3">
                   <input type="checkbox" checked={form.agreedMarketing} onChange={(e) => set('agreedMarketing', e.target.checked)} className="mt-0.5 h-4 w-4 shrink-0 rounded accent-[#F5A623]" />
                   <span className="text-xs" style={{ color: '#7A95B0' }}>I&rsquo;d like to receive bonus offers by email</span>

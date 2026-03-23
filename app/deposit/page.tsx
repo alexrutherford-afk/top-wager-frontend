@@ -47,7 +47,7 @@ export default function DepositPage() {
       {/* Balance reminder */}
       <div className="mb-6 flex items-center justify-between rounded-xl border border-white/10 bg-[#13141f] px-4 py-3">
         <span className="text-sm text-white/50">Current balance</span>
-        <span className="font-bold text-amber-400">€{user.balance.cash.toFixed(2)}</span>
+        <span className="font-bold text-amber-400">€{user.cashBalance.toFixed(2)}</span>
       </div>
 
       {step === 'success' ? (

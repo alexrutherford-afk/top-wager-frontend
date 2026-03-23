@@ -10,7 +10,7 @@ const INPUT = 'w-full rounded-xl border border-white/[0.08] bg-[#1A2332] px-4 py
 
 export default function AccountPage() {
   const { isLoggedIn, user, logout } = useAuth();
-  const [tab, setTab] = useState<Tab>('profile');
+  const [tab, setTab]     = useState<Tab>('profile');
   const [saved, setSaved] = useState(false);
 
   if (!isLoggedIn || !user) {
@@ -22,6 +22,12 @@ export default function AccountPage() {
       </div>
     );
   }
+
+  // Derive initials from full name
+  const nameParts = user.name.split(' ');
+  const initials  = nameParts.length >= 2
+    ? `${nameParts[0][0]}${nameParts[nameParts.length - 1][0]}`
+    : user.name.slice(0, 2).toUpperCase();
 
   const handleSave = () => { setSaved(true); setTimeout(() => setSaved(false), 2000); };
 
@@ -38,26 +44,27 @@ export default function AccountPage() {
       <div className="px-4 py-5 border-b border-white/[0.06]" style={{ background: '#131B24' }}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl text-sm font-black border" style={{ background: 'linear-gradient(135deg,#2D7A50,#1A5C38)', color: '#F5A623', borderColor: 'rgba(245,166,35,0.25)' }}>
-              {user.firstName[0]}{user.lastName[0]}
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl text-sm font-black border"
+              style={{ background: 'linear-gradient(135deg,#2D7A50,#1A5C38)', color: '#F5A623', borderColor: 'rgba(245,166,35,0.25)' }}>
+              {initials}
             </div>
             <div>
-              <p className="font-black text-white">{user.firstName} {user.lastName}</p>
-              <div className="flex items-center gap-2 mt-0.5">
-                <span className="rounded-full px-2 py-0.5 text-[9px] font-black" style={{ background: 'rgba(245,166,35,0.15)', color: '#F5A623' }}>{user.vipLevel}</span>
-                <span className="rounded-full px-2 py-0.5 text-[9px] font-black" style={{ background: 'rgba(26,92,56,0.25)', color: '#3A9E67' }}>✓ Verified</span>
-              </div>
+              <p className="font-black text-white">{user.name}</p>
+              <p className="text-xs mt-0.5" style={{ color: '#5A7090' }}>{user.email}</p>
             </div>
           </div>
-          <button onClick={logout} className="rounded-lg border border-red-500/20 px-3 py-1.5 text-xs font-semibold text-red-400 hover:bg-red-500/5">Sign out</button>
+          <button onClick={logout}
+            className="rounded-lg border border-red-500/20 px-3 py-1.5 text-xs font-semibold text-red-400 hover:bg-red-500/5">
+            Sign out
+          </button>
         </div>
 
         {/* Stats */}
         <div className="mt-4 grid grid-cols-3 gap-2">
           {[
-            { label: 'Cash',         value: `€${user.balance.cash.toFixed(2)}`, gold: true },
-            { label: 'Total wagered', value: `€${user.wageredTotal.toLocaleString()}` },
-            { label: 'Member since',  value: new Date(user.memberSince).toLocaleDateString('en-GB', { month: 'short', year: 'numeric' }) },
+            { label: 'Cash balance',  value: `€${user.cashBalance.toFixed(2)}`,  gold: true },
+            { label: 'Bonus balance', value: `€${user.bonusBalance.toFixed(2)}`, gold: false },
+            { label: 'Account',       value: 'Active',                           gold: false },
           ].map((s) => (
             <div key={s.label} className="rounded-xl p-3 text-center border border-white/[0.06]" style={{ background: '#1A2332' }}>
               <p className="text-[9px] font-bold uppercase tracking-wide mb-1" style={{ color: '#5A7090' }}>{s.label}</p>
@@ -86,15 +93,9 @@ export default function AccountPage() {
             <div className="rounded-2xl border border-white/[0.06] p-5 space-y-4" style={{ background: '#131B24' }}>
               <p className="text-sm font-black text-white">Personal information</p>
               {/* TODO: Backend — PATCH /api/user/profile to save changes */}
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="mb-1.5 block text-xs font-bold" style={{ color: '#5A7090' }}>First name</label>
-                  <input defaultValue={user.firstName} className={INPUT} />
-                </div>
-                <div>
-                  <label className="mb-1.5 block text-xs font-bold" style={{ color: '#5A7090' }}>Last name</label>
-                  <input defaultValue={user.lastName} className={INPUT} />
-                </div>
+              <div>
+                <label className="mb-1.5 block text-xs font-bold" style={{ color: '#5A7090' }}>Full name</label>
+                <input defaultValue={user.name} className={INPUT} />
               </div>
               <div>
                 <label className="mb-1.5 block text-xs font-bold" style={{ color: '#5A7090' }}>Email address</label>
@@ -115,12 +116,13 @@ export default function AccountPage() {
             {/* KYC */}
             <div className="rounded-2xl border border-white/[0.06] p-5" style={{ background: '#131B24' }}>
               <p className="text-sm font-black text-white mb-3">Identity verification (KYC)</p>
-              {/* TODO: Backend — GET /api/user/kyc for real status */}
-              <div className="flex items-start gap-3 rounded-xl px-4 py-3 border" style={{ background: 'rgba(26,92,56,0.1)', borderColor: 'rgba(45,122,80,0.3)' }}>
-                <span style={{ color: '#3A9E67' }}>✓</span>
+              {/* TODO: Backend — GET /api/user/kyc for real KYC status */}
+              <div className="flex items-start gap-3 rounded-xl px-4 py-3 border"
+                style={{ background: 'rgba(245,158,11,0.08)', borderColor: 'rgba(245,158,11,0.25)' }}>
+                <span style={{ color: '#F59E0B' }}>⏳</span>
                 <div>
-                  <p className="text-sm font-semibold" style={{ color: '#3A9E67' }}>Account fully verified</p>
-                  <p className="text-xs mt-0.5" style={{ color: '#5A7090' }}>Your identity has been confirmed. No further action needed.</p>
+                  <p className="text-sm font-semibold" style={{ color: '#F59E0B' }}>Verification pending</p>
+                  <p className="text-xs mt-0.5" style={{ color: '#5A7090' }}>Please upload your ID to unlock withdrawals.</p>
                 </div>
               </div>
             </div>
@@ -132,7 +134,7 @@ export default function AccountPage() {
           <>
             <div className="rounded-2xl border border-white/[0.06] p-5 space-y-4" style={{ background: '#131B24' }}>
               <p className="text-sm font-black text-white">Change password</p>
-              {/* TODO: Backend — POST /api/auth/change-password */}
+              {/* TODO: Backend — POST /api/auth/change-password (use supabase.auth.updateUser) */}
               {['Current password', 'New password', 'Confirm new password'].map((l) => (
                 <div key={l}>
                   <label className="mb-1.5 block text-xs font-bold" style={{ color: '#5A7090' }}>{l}</label>
@@ -145,7 +147,7 @@ export default function AccountPage() {
             <div className="rounded-2xl border border-white/[0.06] p-5 space-y-3" style={{ background: '#131B24' }}>
               <p className="text-sm font-black text-white">Two-factor authentication</p>
               <p className="text-sm" style={{ color: '#5A7090' }}>Add an extra layer of security to your account.</p>
-              {/* TODO: Backend — POST /api/auth/2fa/setup */}
+              {/* TODO: Backend — POST /api/auth/2fa/setup (Supabase MFA) */}
               <div className="flex items-center justify-between rounded-xl border border-white/[0.06] px-4 py-3" style={{ background: '#1A2332' }}>
                 <div>
                   <p className="text-sm font-semibold text-white">Authenticator app</p>

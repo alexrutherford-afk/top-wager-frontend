@@ -253,10 +253,10 @@ export default function LobbyPage() {
     <div className="pb-20 md:pb-6" style={{ background: '#0D1117' }}>
 
       {/* Ticker */}
-      <Ticker loggedIn={isLoggedIn} firstName={user?.firstName} />
+      <Ticker loggedIn={isLoggedIn} firstName={user?.name.split(' ')[0]} />
 
       {/* Welcome bar (logged in) */}
-      {isLoggedIn && user && <WelcomeBar name={user.firstName} />}
+      {isLoggedIn && user && <WelcomeBar name={user.name.split(' ')[0]} />}
 
       {/* Banner carousel */}
       <BannerCarousel />

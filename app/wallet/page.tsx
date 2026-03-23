@@ -165,7 +165,7 @@ function WithdrawTab() {
   const [step, setStep] = useState<'form' | 'confirm' | 'success'>('form');
   const [loading, setLoading] = useState(false);
   const amountNum = parseFloat(amount) || 0;
-  const available = user?.balance.cash ?? 0;
+  const available = user?.cashBalance ?? 0;
   const method = PAYMENT_METHODS.find((m) => m.id === selectedMethod)!;
 
   const handleConfirm = async () => {
@@ -376,15 +376,15 @@ export default function WalletPage() {
       <div className="px-4 py-5" style={{ background: 'linear-gradient(180deg, #131B24, #0D1117)' }}>
         <p className="mb-1 text-xs font-bold uppercase tracking-wider" style={{ color: '#5A7090' }}>Total balance</p>
         <p className="text-4xl font-black text-white">
-          €{(user.balance.cash + user.balance.bonus).toLocaleString('en-GB', { minimumFractionDigits: 2 })}
+          €{(user.cashBalance + user.bonusBalance).toLocaleString("en-GB",{minimumFractionDigits:2})}
         </p>
 
         {/* Balance breakdown */}
         <div className="mt-4 grid grid-cols-3 gap-2">
           {[
-            { label: 'Cash',    value: `€${user.balance.cash.toFixed(2)}`,    color: 'text-white',       note: 'Withdrawable' },
-            { label: 'Bonus',   value: `€${user.balance.bonus.toFixed(2)}`,   color: '',                 note: 'Wagering req.', gold: true },
-            { label: 'Pending', value: `€${user.balance.pending.toFixed(2)}`, color: '',                 note: 'Processing', amber: true },
+            { label: 'Cash',    value: `€${user.cashBalance.toFixed(2)}`,    color: 'text-white',       note: 'Withdrawable' },
+            { label: 'Bonus',   value: `€${user.bonusBalance.toFixed(2)}`,   color: '',                 note: 'Wagering req.', gold: true },
+            { label: 'Pending', value: `€${0..toFixed(2)}`, color: '',                 note: 'Processing', amber: true },
           ].map((b) => (
             <div key={b.label} className="rounded-xl p-3 border border-white/[0.06]" style={{ background: '#1A2332' }}>
               <p className="text-[9px] font-bold uppercase tracking-wider mb-1" style={{ color: '#5A7090' }}>{b.label}</p>

@@ -27,7 +27,7 @@ export default function WithdrawPage() {
 
   const method = PAYMENT_METHODS.find((m) => m.id === selectedMethod)!;
   const amountNum = parseFloat(amount) || 0;
-  const availableCash = user.balance.cash;
+  const availableCash = user.cashBalance;
 
   const handleWithdraw = async () => {
     setLoading(true);
@@ -51,7 +51,7 @@ export default function WithdrawPage() {
         </div>
         <div className="rounded-xl border border-white/10 bg-[#13141f] px-4 py-3">
           <p className="text-xs text-white/40 mb-0.5">Bonus balance</p>
-          <p className="text-lg font-bold text-white/40">€{user.balance.bonus.toFixed(2)}</p>
+          <p className="text-lg font-bold text-white/40">€{user.bonusBalance.toFixed(2)}</p>
         </div>
       </div>
 

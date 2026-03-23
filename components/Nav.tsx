@@ -69,7 +69,7 @@ export function Nav() {
                     boxShadow: '0 0 10px rgba(26,92,56,0.4)',
                   }}
                 >
-                  {user.firstName[0]}{user.lastName[0]}
+                  {user.name.split(' ').map((n:string)=>n[0]).join('')}
                 </div>
                 <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-[#E84D1C] border-2 border-[#131B24]" />
               </Link>
@@ -102,11 +102,11 @@ export function Nav() {
           >
             <div className="flex flex-col px-3 py-1.5 border-r border-white/[0.07]">
               <span className="text-[8px] font-bold uppercase tracking-wider" style={{ color: '#5A7090' }}>💰 Main</span>
-              <span className="text-sm font-black text-white">€{user.balance.cash.toLocaleString('en-GB', { minimumFractionDigits: 2 })}</span>
+              <span className="text-sm font-black text-white">€{user.cashBalance.toLocaleString("en-GB",{minimumFractionDigits:2})}</span>
             </div>
             <div className="flex flex-col px-3 py-1.5 border-r border-white/[0.07]">
               <span className="text-[8px] font-bold uppercase tracking-wider" style={{ color: '#5A7090' }}>🎁 Bonus</span>
-              <span className="text-sm font-black" style={{ color: '#F5A623' }}>€{user.balance.bonus.toFixed(2)}</span>
+              <span className="text-sm font-black" style={{ color: '#F5A623' }}>€{user.bonusBalance.toFixed(2)}</span>
             </div>
             <Link
               href="/withdraw"
@@ -186,7 +186,7 @@ export function Nav() {
           <span className="text-[19px]">💳</span>
           <span className="text-[8.5px] font-semibold">Wallet</span>
           {isLoggedIn && user && (
-            <span className="text-[7.5px] font-bold" style={{ color: '#F5A623' }}>€{user.balance.cash.toFixed(0)}</span>
+            <span className="text-[7.5px] font-bold" style={{ color: '#F5A623' }}>€{user.cashBalance.toFixed(0)}</span>
           )}
         </Link>
         <Link
