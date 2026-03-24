@@ -2,46 +2,63 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { createClient } from '@/lib/supabase';
-import type { User, Session } from '@supabase/supabase-js';
+import type { Session } from '@supabase/supabase-js';
 
 export type AuthUser = {
   id: string;
   email: string;
   name: string;
-  // Wallet fields — populated from profiles table once backend is wired
+  currency: string;
+  kycStatus: 'not_submitted' | 'pending' | 'verified' | 'rejected';
+  vipLevel: number;
   cashBalance: number;
   bonusBalance: number;
+  pendingWithdrawal: number;
 };
 
 type AuthContextType = {
   isLoggedIn: boolean;
   user: AuthUser | null;
   session: Session | null;
-  login: (email: string, password: string) => Promise<{ error: string | null }>;
-  register: (email: string, password: string, name: string) => Promise<{ error: string | null }>;
-  logout: () => Promise<void>;
   loading: boolean;
+  login: (email: string, password: string) => Promise<{ error: string | null }>;
+  register: (email: string, password: string, name: string, currency: string) => Promise<{ error: string | null }>;
+  logout: () => Promise<void>;
+  refreshUser: () => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextType>({
-  isLoggedIn: false,
-  user: null,
-  session: null,
+  isLoggedIn: false, user: null, session: null, loading: true,
   login: async () => ({ error: null }),
   register: async () => ({ error: null }),
   logout: async () => {},
-  loading: true,
+  refreshUser: async () => {},
 });
 
-function supabaseUserToAuthUser(supabaseUser: User): AuthUser {
+// Fetch profile + wallet from Supabase and merge into AuthUser
+async function fetchPlayerData(userId: string, email: string): Promise<AuthUser | null> {
+  const supabase = createClient();
+
+  const [profileRes, walletRes] = await Promise.all([
+    supabase.from('profiles').select('*').eq('id', userId).single(),
+    supabase.from('wallets').select('*').eq('player_id', userId).single(),
+  ]);
+
+  if (profileRes.error || !profileRes.data) return null;
+
+  const profile = profileRes.data;
+  const wallet  = walletRes.data;
+
   return {
-    id: supabaseUser.id,
-    email: supabaseUser.email ?? '',
-    name: supabaseUser.user_metadata?.full_name ?? supabaseUser.email?.split('@')[0] ?? 'Player',
-    // TODO: Backend — fetch real balances from profiles table
-    // GET /api/player/balance
-    cashBalance: 0,
-    bonusBalance: 0,
+    id:                 userId,
+    email,
+    name:               profile.full_name ?? email.split('@')[0],
+    currency:           profile.currency ?? 'EUR',
+    kycStatus:          profile.kyc_status ?? 'not_submitted',
+    vipLevel:           profile.vip_level ?? 0,
+    cashBalance:        wallet?.cash_balance        ?? 0,
+    bonusBalance:       wallet?.bonus_balance       ?? 0,
+    pendingWithdrawal:  wallet?.pending_withdrawal  ?? 0,
   };
 }
 
@@ -51,19 +68,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const supabase = createClient();
 
+  const loadUser = async (session: Session | null) => {
+    if (!session?.user) { setUser(null); setLoading(false); return; }
+    const player = await fetchPlayerData(session.user.id, session.user.email ?? '');
+    setUser(player);
+    setLoading(false);
+  };
+
   useEffect(() => {
-    // Get initial session on mount
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
-      setUser(session?.user ? supabaseUserToAuthUser(session.user) : null);
-      setLoading(false);
+      loadUser(session);
     });
 
-    // Listen for auth changes (login, logout, token refresh)
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
-      setUser(session?.user ? supabaseUserToAuthUser(session.user) : null);
-      setLoading(false);
+      loadUser(session);
     });
 
     return () => subscription.unsubscribe();
@@ -71,17 +91,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (email: string, password: string): Promise<{ error: string | null }> => {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) return { error: error.message };
+    if (error) return { error: error.message === 'Invalid login credentials' ? 'Incorrect email or password.' : error.message };
     return { error: null };
   };
 
-  const register = async (email: string, password: string, name: string): Promise<{ error: string | null }> => {
+  const register = async (
+    email: string,
+    password: string,
+    name: string,
+    currency: string = 'EUR'
+  ): Promise<{ error: string | null }> => {
     const { error } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        data: { full_name: name },
-        // TODO: Backend — set emailRedirectTo to your production domain
+        data: { full_name: name, currency },
+        // TODO: set emailRedirectTo to your production domain when going live
         // emailRedirectTo: 'https://topwager.com/auth/callback'
       },
     });
@@ -91,18 +116,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = async () => {
     await supabase.auth.signOut();
+    setUser(null);
+    setSession(null);
+  };
+
+  const refreshUser = async () => {
+    if (!session?.user) return;
+    const player = await fetchPlayerData(session.user.id, session.user.email ?? '');
+    setUser(player);
   };
 
   return (
-    <AuthContext.Provider value={{
-      isLoggedIn: !!user,
-      user,
-      session,
-      login,
-      register,
-      logout,
-      loading,
-    }}>
+    <AuthContext.Provider value={{ isLoggedIn: !!user, user, session, loading, login, register, logout, refreshUser }}>
       {children}
     </AuthContext.Provider>
   );

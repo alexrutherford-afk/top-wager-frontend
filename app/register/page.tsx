@@ -50,7 +50,8 @@ export default function RegisterPage() {
     const { error } = await register(
       form.email,
       form.password,
-      `${form.firstName} ${form.lastName}`.trim()
+      `${form.firstName} ${form.lastName}`.trim(),
+      form.currency
     );
     setLoading(false);
     if (error) { setSubmitError(error); return; }
