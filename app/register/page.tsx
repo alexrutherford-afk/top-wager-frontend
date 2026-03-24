@@ -62,6 +62,19 @@ export default function RegisterPage() {
           </div>
           <h1 className="text-xl font-black text-white">{t('register_title')}</h1>
           <p className="mt-1 text-sm" style={{ color: '#5A7090' }}>{t('register_subtitle')}</p>
+          {/* Reset detected location */}
+          <button
+            type="button"
+            onClick={() => {
+              localStorage.removeItem('tw_country_manual');
+              localStorage.removeItem('tw_country');
+              window.location.reload();
+            }}
+            className="mt-2 text-[10px] underline"
+            style={{ color: '#3A4A5A' }}>
+            {countryConfig.flag} {countryConfig.name} · Reset location
+          </button>
+
           {/* Language selector */}
           <div className="mt-3 flex justify-center gap-1">
             {(Object.keys(LANG_LABELS) as Lang[]).map(l => (
