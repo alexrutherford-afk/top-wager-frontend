@@ -1,10 +1,9 @@
 import type { Metadata } from 'next';
 import { Geist } from 'next/font/google';
 import './globals.css';
-import { Providers }        from './providers';
-import { Nav }              from '@/components/Nav';
-import { GeoLanguageBar }   from '@/components/GeoLanguageBar';
-import { GeoGate }          from '@/components/GeoGate';
+import { Providers } from './providers';
+import { Nav }       from '@/components/Nav';
+import { GeoGate }   from '@/components/GeoGate';
 
 const geistSans = Geist({ variable: '--font-geist-sans', subsets: ['latin'] });
 
@@ -20,7 +19,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Providers>
           <GeoGate>
             <div className="sticky top-0 z-50">
-              <GeoLanguageBar />
               <Nav />
             </div>
             <main className="flex-1">{children}</main>

@@ -5,13 +5,13 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { useGeo } from '@/context/GeoContext';
-import { useI18n } from '@/context/I18nContext';
+import { useI18n, Lang, LANG_LABELS } from '@/context/I18nContext';
 import { ALL_SELECTABLE } from '@/data/geoConfig';
 
 export default function RegisterPage() {
   const { register }                    = useAuth();
   const { countryConfig, setCountry }   = useGeo();
-  const { t }                           = useI18n();
+  const { t, lang, setLang }            = useI18n();
   const router                          = useRouter();
 
   const [email,        setEmail]        = useState('');
@@ -62,6 +62,18 @@ export default function RegisterPage() {
           </div>
           <h1 className="text-xl font-black text-white">{t('register_title')}</h1>
           <p className="mt-1 text-sm" style={{ color: '#5A7090' }}>{t('register_subtitle')}</p>
+          {/* Language selector */}
+          <div className="mt-3 flex justify-center gap-1">
+            {(Object.keys(LANG_LABELS) as Lang[]).map(l => (
+              <button key={l} onClick={() => setLang(l)}
+                className="rounded-full px-3 py-1 text-[11px] font-semibold transition-colors"
+                style={lang === l
+                  ? { background: 'rgba(245,166,35,0.15)', color: '#F5A623', border: '1px solid rgba(245,166,35,0.3)' }
+                  : { color: '#4A5568', border: '1px solid transparent' }}>
+                {LANG_LABELS[l]}
+              </button>
+            ))}
+          </div>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-3">
