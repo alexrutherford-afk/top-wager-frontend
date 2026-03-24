@@ -42,9 +42,11 @@ export function GeoProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
-    const saved = localStorage.getItem('tw_country');
-    if (saved) {
-      applyCountry(saved, false); // manual preference — don't override lang
+    // Only respect localStorage if the player manually chose a country
+    // Auto-detected country is never cached — always re-detect on each visit
+    const manualChoice = localStorage.getItem('tw_country_manual');
+    if (manualChoice) {
+      applyCountry(manualChoice, false);
       setDetected(true);
       return;
     }
@@ -53,7 +55,7 @@ export function GeoProvider({ children }: { children: ReactNode }) {
       .then(r => r.json())
       .then(data => {
         const code = data?.country_code ?? 'OTHER';
-        applyCountry(code, true); // auto-detect — set lang from country
+        applyCountry(code, true);
         setDetected(true);
       })
       .catch(() => {
@@ -63,7 +65,8 @@ export function GeoProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const setCountry = (code: string) => {
-    localStorage.setItem('tw_country', code);
+    // Only persist when player explicitly picks — not on auto-detect
+    localStorage.setItem('tw_country_manual', code);
     applyCountry(code, true);
   };
 
