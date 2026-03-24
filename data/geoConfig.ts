@@ -21,6 +21,7 @@ export type CountryConfig = {
   flag:           string;
   currency:       string;
   currencySymbol: string;
+  callingCode:    string;   // e.g. '+254'
   defaultLang:    'en' | 'sw' | 'fr';
   paymentMethods: PaymentMethod[];
   blocked:        false;
@@ -60,117 +61,27 @@ const PM = {
 // ── Allowed countries ─────────────────────────────────────────────────────────
 export const ALLOWED_COUNTRIES: CountryConfig[] = [
   // ── Africa ────────────────────────────────────────────────────────────────
-  {
-    code: 'KE', name: 'Kenya',         flag: '🇰🇪', currency: 'KES', currencySymbol: 'KSh',
-    defaultLang: 'sw',
-    blocked: false,
-    paymentMethods: [PM.mpesa_ke, PM.airtel_ke, PM.visa, PM.mastercard, PM.crypto],
-  },
-  {
-    code: 'TZ', name: 'Tanzania',      flag: '🇹🇿', currency: 'TZS', currencySymbol: 'TSh',
-    defaultLang: 'sw',
-    blocked: false,
-    paymentMethods: [PM.mpesa_tz, PM.airtel_tz, PM.visa, PM.mastercard, PM.crypto],
-  },
-  {
-    code: 'NG', name: 'Nigeria',       flag: '🇳🇬', currency: 'NGN', currencySymbol: '₦',
-    defaultLang: 'en',
-    blocked: false,
-    paymentMethods: [PM.opay, PM.bank_ng, PM.mtn_ng, PM.visa, PM.mastercard, PM.crypto],
-  },
-  {
-    code: 'GH', name: 'Ghana',         flag: '🇬🇭', currency: 'GHS', currencySymbol: '₵',
-    defaultLang: 'en',
-    blocked: false,
-    paymentMethods: [PM.mtn_gh, PM.visa, PM.mastercard, PM.crypto],
-  },
-  {
-    code: 'ZA', name: 'South Africa',  flag: '🇿🇦', currency: 'ZAR', currencySymbol: 'R',
-    defaultLang: 'en',
-    blocked: false,
-    paymentMethods: [PM.ozow, PM.bank_za, PM.visa, PM.mastercard, PM.skrill, PM.crypto],
-  },
-  {
-    code: 'UG', name: 'Uganda',        flag: '🇺🇬', currency: 'UGX', currencySymbol: 'USh',
-    defaultLang: 'sw',
-    blocked: false,
-    paymentMethods: [PM.airtel_ke, PM.visa, PM.mastercard, PM.crypto],
-  },
-  {
-    code: 'RW', name: 'Rwanda',        flag: '🇷🇼', currency: 'RWF', currencySymbol: 'Fr',
-    defaultLang: 'fr',
-    blocked: false,
-    paymentMethods: [PM.visa, PM.mastercard, PM.crypto],
-  },
-  {
-    code: 'SN', name: 'Senegal',       flag: '🇸🇳', currency: 'XOF', currencySymbol: 'CFA',
-    defaultLang: 'fr',
-    blocked: false,
-    paymentMethods: [PM.visa, PM.mastercard, PM.crypto],
-  },
-  {
-    code: 'CI', name: 'Côte d\'Ivoire',flag: '🇨🇮', currency: 'XOF', currencySymbol: 'CFA',
-    defaultLang: 'fr',
-    blocked: false,
-    paymentMethods: [PM.visa, PM.mastercard, PM.crypto],
-  },
-  {
-    code: 'CM', name: 'Cameroon',      flag: '🇨🇲', currency: 'XAF', currencySymbol: 'CFA',
-    defaultLang: 'fr',
-    blocked: false,
-    paymentMethods: [PM.visa, PM.mastercard, PM.crypto],
-  },
+  { code: 'KE', name: 'Kenya',          flag: '🇰🇪', currency: 'KES', currencySymbol: 'KSh', callingCode: '+254', defaultLang: 'sw', blocked: false, paymentMethods: [PM.mpesa_ke, PM.airtel_ke, PM.visa, PM.mastercard, PM.crypto] },
+  { code: 'TZ', name: 'Tanzania',       flag: '🇹🇿', currency: 'TZS', currencySymbol: 'TSh', callingCode: '+255', defaultLang: 'sw', blocked: false, paymentMethods: [PM.mpesa_tz, PM.airtel_tz, PM.visa, PM.mastercard, PM.crypto] },
+  { code: 'NG', name: 'Nigeria',        flag: '🇳🇬', currency: 'NGN', currencySymbol: '₦',   callingCode: '+234', defaultLang: 'en', blocked: false, paymentMethods: [PM.opay, PM.bank_ng, PM.mtn_ng, PM.visa, PM.mastercard, PM.crypto] },
+  { code: 'GH', name: 'Ghana',          flag: '🇬🇭', currency: 'GHS', currencySymbol: '₵',   callingCode: '+233', defaultLang: 'en', blocked: false, paymentMethods: [PM.mtn_gh, PM.visa, PM.mastercard, PM.crypto] },
+  { code: 'ZA', name: 'South Africa',   flag: '🇿🇦', currency: 'ZAR', currencySymbol: 'R',   callingCode: '+27',  defaultLang: 'en', blocked: false, paymentMethods: [PM.ozow, PM.bank_za, PM.visa, PM.mastercard, PM.skrill, PM.crypto] },
+  { code: 'UG', name: 'Uganda',         flag: '🇺🇬', currency: 'UGX', currencySymbol: 'USh', callingCode: '+256', defaultLang: 'sw', blocked: false, paymentMethods: [PM.airtel_ke, PM.visa, PM.mastercard, PM.crypto] },
+  { code: 'RW', name: 'Rwanda',         flag: '🇷🇼', currency: 'RWF', currencySymbol: 'Fr',  callingCode: '+250', defaultLang: 'fr', blocked: false, paymentMethods: [PM.visa, PM.mastercard, PM.crypto] },
+  { code: 'SN', name: 'Senegal',        flag: '🇸🇳', currency: 'XOF', currencySymbol: 'CFA', callingCode: '+221', defaultLang: 'fr', blocked: false, paymentMethods: [PM.visa, PM.mastercard, PM.crypto] },
+  { code: 'CI', name: "Côte d'Ivoire",  flag: '🇨🇮', currency: 'XOF', currencySymbol: 'CFA', callingCode: '+225', defaultLang: 'fr', blocked: false, paymentMethods: [PM.visa, PM.mastercard, PM.crypto] },
+  { code: 'CM', name: 'Cameroon',       flag: '🇨🇲', currency: 'XAF', currencySymbol: 'CFA', callingCode: '+237', defaultLang: 'fr', blocked: false, paymentMethods: [PM.visa, PM.mastercard, PM.crypto] },
   // ── Asia ──────────────────────────────────────────────────────────────────
-  {
-    code: 'IN', name: 'India',         flag: '🇮🇳', currency: 'INR', currencySymbol: '₹',
-    defaultLang: 'en',
-    blocked: false,
-    paymentMethods: [PM.upi, PM.netbanking, PM.visa, PM.mastercard, PM.skrill, PM.crypto],
-  },
-  {
-    code: 'BD', name: 'Bangladesh',    flag: '🇧🇩', currency: 'BDT', currencySymbol: '৳',
-    defaultLang: 'en',
-    blocked: false,
-    paymentMethods: [PM.visa, PM.mastercard, PM.skrill, PM.crypto],
-  },
-  {
-    code: 'PK', name: 'Pakistan',      flag: '🇵🇰', currency: 'PKR', currencySymbol: '₨',
-    defaultLang: 'en',
-    blocked: false,
-    paymentMethods: [PM.visa, PM.mastercard, PM.skrill, PM.crypto],
-  },
-  {
-    code: 'JP', name: 'Japan',         flag: '🇯🇵', currency: 'JPY', currencySymbol: '¥',
-    defaultLang: 'en',
-    blocked: false,
-    paymentMethods: [PM.visa, PM.mastercard, PM.neteller, PM.crypto],
-  },
+  { code: 'IN', name: 'India',          flag: '🇮🇳', currency: 'INR', currencySymbol: '₹',   callingCode: '+91',  defaultLang: 'en', blocked: false, paymentMethods: [PM.upi, PM.netbanking, PM.visa, PM.mastercard, PM.skrill, PM.crypto] },
+  { code: 'BD', name: 'Bangladesh',     flag: '🇧🇩', currency: 'BDT', currencySymbol: '৳',   callingCode: '+880', defaultLang: 'en', blocked: false, paymentMethods: [PM.visa, PM.mastercard, PM.skrill, PM.crypto] },
+  { code: 'PK', name: 'Pakistan',       flag: '🇵🇰', currency: 'PKR', currencySymbol: '₨',   callingCode: '+92',  defaultLang: 'en', blocked: false, paymentMethods: [PM.visa, PM.mastercard, PM.skrill, PM.crypto] },
+  { code: 'JP', name: 'Japan',          flag: '🇯🇵', currency: 'JPY', currencySymbol: '¥',   callingCode: '+81',  defaultLang: 'en', blocked: false, paymentMethods: [PM.visa, PM.mastercard, PM.neteller, PM.crypto] },
   // ── Americas ──────────────────────────────────────────────────────────────
-  {
-    code: 'CA', name: 'Canada',        flag: '🇨🇦', currency: 'CAD', currencySymbol: 'C$',
-    defaultLang: 'en',
-    blocked: false,
-    paymentMethods: [PM.interac, PM.visa, PM.mastercard, PM.skrill, PM.neteller, PM.crypto],
-  },
-  {
-    code: 'BR', name: 'Brazil',        flag: '🇧🇷', currency: 'BRL', currencySymbol: 'R$',
-    defaultLang: 'en',
-    blocked: false,
-    paymentMethods: [PM.pix, PM.visa, PM.mastercard, PM.skrill, PM.crypto],
-  },
-  {
-    code: 'MX', name: 'Mexico',        flag: '🇲🇽', currency: 'MXN', currencySymbol: '$',
-    defaultLang: 'en',
-    blocked: false,
-    paymentMethods: [PM.oxxo, PM.visa, PM.mastercard, PM.skrill, PM.crypto],
-  },
-  // ── Rest of world (catch-all for unrecognised allowed countries) ──────────
-  {
-    code: 'OTHER', name: 'Other',      flag: '🌍', currency: 'USD', currencySymbol: '$',
-    defaultLang: 'en',
-    blocked: false,
-    paymentMethods: [PM.visa, PM.mastercard, PM.skrill, PM.neteller, PM.crypto],
-  },
+  { code: 'CA', name: 'Canada',         flag: '🇨🇦', currency: 'CAD', currencySymbol: 'C$',  callingCode: '+1',   defaultLang: 'en', blocked: false, paymentMethods: [PM.interac, PM.visa, PM.mastercard, PM.skrill, PM.neteller, PM.crypto] },
+  { code: 'BR', name: 'Brazil',         flag: '🇧🇷', currency: 'BRL', currencySymbol: 'R$',  callingCode: '+55',  defaultLang: 'en', blocked: false, paymentMethods: [PM.pix, PM.visa, PM.mastercard, PM.skrill, PM.crypto] },
+  { code: 'MX', name: 'Mexico',         flag: '🇲🇽', currency: 'MXN', currencySymbol: '$',   callingCode: '+52',  defaultLang: 'en', blocked: false, paymentMethods: [PM.oxxo, PM.visa, PM.mastercard, PM.skrill, PM.crypto] },
+  // ── Rest of world ─────────────────────────────────────────────────────────
+  { code: 'OTHER', name: 'Other',       flag: '🌍', currency: 'USD', currencySymbol: '$',    callingCode: '+1',   defaultLang: 'en', blocked: false, paymentMethods: [PM.visa, PM.mastercard, PM.skrill, PM.neteller, PM.crypto] },
 ];
 
 // ── Blocked countries (Tobique cannot serve) ──────────────────────────────────

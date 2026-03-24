@@ -4,6 +4,7 @@ import { createContext, useContext, useEffect, useState, ReactNode } from 'react
 import en, { TranslationKey } from '@/locales/en';
 import sw from '@/locales/sw';
 import fr from '@/locales/fr';
+import { registerLangSetter } from './GeoContext';
 
 export type Lang = 'en' | 'sw' | 'fr';
 
@@ -39,6 +40,9 @@ export function I18nProvider({ defaultLang = 'en', children }: { defaultLang?: L
     localStorage.setItem('tw_lang', l);
     setLangState(l);
   };
+
+  // Register setter so GeoContext can drive language on country detection
+  useEffect(() => { registerLangSetter(setLang); }, []);
 
   const t = (key: TranslationKey): string =>
     TRANSLATIONS[lang][key] ?? en[key] ?? key;
