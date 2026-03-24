@@ -22,7 +22,7 @@ export function Nav() {
   return (
     <>
       {/* ── Sticky header ─────────────────────────────────── */}
-      <header className="sticky top-0 z-50">
+      <header>
 
         {/* Top bar: logo + actions */}
         <div

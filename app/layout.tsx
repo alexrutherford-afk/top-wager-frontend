@@ -19,8 +19,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="min-h-full flex flex-col text-white antialiased" style={{ background: '#07090F' }}>
         <Providers>
           <GeoGate>
-            <GeoLanguageBar />
-            <Nav />
+            <div className="sticky top-0 z-50">
+              <GeoLanguageBar />
+              <Nav />
+            </div>
             <main className="flex-1">{children}</main>
             <footer className="border-t border-white/5 py-6 text-center text-xs pb-20 md:pb-6"
               style={{ color: '#5A7090', background: '#0D1117' }}>
