@@ -13,7 +13,7 @@ export default function LoginPage() {
   const [loading, setLoading]   = useState(false);
   const [error, setError]       = useState('');
 
-  const INPUT = 'w-full rounded-xl border border-white/10 bg-[#1A2332] px-4 py-3 text-sm text-white placeholder-white/20 outline-none transition-colors';
+  const INPUT = 'w-full rounded-xl border border-white/10 bg-[#1A2332] px-4 py-3 text-base text-white placeholder-white/20 outline-none transition-colors';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

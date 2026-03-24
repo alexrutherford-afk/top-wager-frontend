@@ -6,7 +6,7 @@ import { useAuth } from '@/context/AuthContext';
 
 type Tab = 'profile' | 'security' | 'responsible';
 
-const INPUT = 'w-full rounded-xl border border-white/[0.08] bg-[#1A2332] px-4 py-3 text-sm text-white placeholder-white/20 outline-none focus:border-[#F5A623]/40 transition-colors';
+const INPUT = 'w-full rounded-xl border border-white/[0.08] bg-[#1A2332] px-4 py-3 text-base text-white placeholder-white/20 outline-none focus:border-[#F5A623]/40 transition-colors';
 
 export default function AccountPage() {
   const { isLoggedIn, user, logout } = useAuth();

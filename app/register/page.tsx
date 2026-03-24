@@ -7,8 +7,9 @@ import { useAuth } from '@/context/AuthContext';
 
 type Step = 1 | 2 | 3;
 
+// text-base (16px) prevents iOS Safari from zooming on input focus
 const INPUT = (err?: string) =>
-  `w-full rounded-xl border ${err ? 'border-red-500/40 bg-red-500/5' : 'border-white/[0.08] bg-[#1A2332]'} px-4 py-3 text-sm text-white placeholder-white/20 outline-none focus:border-[#F5A623]/40 transition-colors`;
+  `w-full rounded-xl border ${err ? 'border-red-500/40 bg-red-500/5' : 'border-white/[0.08] bg-[#1A2332]'} px-4 py-3 text-base text-white placeholder-white/20 outline-none focus:border-[#F5A623]/40 transition-colors`;
 
 export default function RegisterPage() {
   const { register } = useAuth();
@@ -23,7 +24,7 @@ export default function RegisterPage() {
   const validate = () => {
     const e: Record<string, string> = {};
     if (step === 1) {
-      if (!form.email.includes('@')) e.email = 'Enter a valid email address';
+      if (!form.email) e.email = 'Please enter your email address';
       if (form.password.length < 8) e.password = 'Minimum 8 characters';
       if (form.password !== form.confirmPassword) e.confirmPassword = 'Passwords do not match';
     }
