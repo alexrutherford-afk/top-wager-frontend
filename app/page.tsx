@@ -75,7 +75,9 @@ const BANNERS_GUEST = [
 
 function BannerCarousel() {
   const [active, setActive] = useState(0);
+  const [touchStartX, setTouchStartX] = useState<number | null>(null);
   const next = useCallback(() => setActive((a) => (a + 1) % BANNERS_GUEST.length), []);
+  const prev = useCallback(() => setActive((a) => (a - 1 + BANNERS_GUEST.length) % BANNERS_GUEST.length), []);
 
   useEffect(() => {
     const t = setInterval(next, 4000);
@@ -85,7 +87,18 @@ function BannerCarousel() {
   const b = BANNERS_GUEST[active];
   return (
     <div style={{ background: '#131B24' }}>
-      <div className="relative overflow-hidden" style={{ height: 160 }}>
+      <div
+        className="relative overflow-hidden"
+        style={{ height: 160 }}
+        onTouchStart={(e) => setTouchStartX(e.touches[0].clientX)}
+        onTouchEnd={(e) => {
+          if (touchStartX === null) return;
+          const diff = touchStartX - e.changedTouches[0].clientX;
+          if (diff > 50) next();
+          else if (diff < -50) prev();
+          setTouchStartX(null);
+        }}
+      >
         <div className="absolute inset-0" style={{ background: b.bg }} />
         <div className="absolute inset-0" style={{ background: b.glow }} />
         {/* Art */}

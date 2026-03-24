@@ -6,10 +6,10 @@ import { useAuth } from '@/context/AuthContext';
 
 const TABS = [
   { href: '/', icon: '🏠', label: 'Home' },
-  { href: '/?cat=slots', icon: '🎰', label: 'Slots' },
-  { href: '/?cat=live', icon: '🃏', label: 'Live' },
-  { href: '/?cat=crash', icon: '✈️', label: 'Crash', badge: 'HOT', badgeOrange: true },
-  { href: '/?cat=jackpot', icon: '🏆', label: 'Jackpots' },
+  { href: '/slots', icon: '🎰', label: 'Slots' },
+  { href: '/live', icon: '🃏', label: 'Live' },
+  { href: '/crash', icon: '✈️', label: 'Crash', badge: 'HOT', badgeOrange: true },
+  { href: '/jackpots', icon: '🏆', label: 'Jackpots' },
   { href: '/bonuses', icon: '🎁', label: 'Promos', badge: 'NEW', badgeOrange: false },
 ];
 
@@ -17,7 +17,7 @@ export function Nav() {
   const { isLoggedIn, user, logout } = useAuth();
   const pathname = usePathname();
 
-  const isActive = (href: string) => href === '/' ? pathname === '/' : pathname.startsWith(href.split('?')[0]) && href !== '/';
+  const isActive = (href: string) => href === '/' ? pathname === '/' : pathname.startsWith(href);
 
   return (
     <>
@@ -160,7 +160,7 @@ export function Nav() {
           <span className="text-[19px]">🏠</span>
           <span className="text-[8.5px] font-semibold">Home</span>
         </Link>
-        <Link href="/?cat=slots" className="flex flex-col items-center gap-0.5 px-3 py-1 text-[#5A7090]">
+        <Link href="/slots" className="flex flex-col items-center gap-0.5 px-3 py-1 text-[#5A7090]">
           <span className="text-[19px]">🎰</span>
           <span className="text-[8.5px] font-semibold">Casino</span>
         </Link>
