@@ -3,6 +3,8 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
+import { useGeo } from '@/context/GeoContext';
+import { detectUgandaCarrier, type UgandaCarrier } from '@/lib/ugandaCarrier';
 import { MOCK_TRANSACTIONS, PAYMENT_METHODS } from '@/data/mockUser';
 
 // ── Shared styles ─────────────────────────────────────────────────────────────
@@ -11,6 +13,74 @@ const BTN_PRIMARY = 'w-full rounded-xl py-3.5 text-sm font-black text-[#0A0E14] 
 const BTN_SECONDARY = 'flex-1 rounded-xl border border-white/10 py-3 text-sm font-medium text-white/60 hover:bg-white/5 transition-colors';
 
 const QUICK_AMOUNTS = [10, 20, 50, 100, 200, 500];
+
+// ── Uganda Payment Methods card ───────────────────────────────────────────────
+
+const CARRIER_STYLE: Record<UgandaCarrier, { bg: string; color: string; label: string }> = {
+  MTN:    { bg: '#FFCC00', color: '#1a1a00', label: 'MTN Mobile Money' },
+  Airtel: { bg: '#E40000', color: '#ffffff', label: 'Airtel Money'     },
+};
+
+function UgandaPaymentMethods({ phone }: { phone?: string }) {
+  const carrier = phone ? detectUgandaCarrier(phone) : null;
+  const carriers: UgandaCarrier[] = carrier ? [carrier] : ['MTN', 'Airtel'];
+
+  return (
+    <div className="px-4 pb-4">
+      <p className="mb-2 text-xs font-bold uppercase tracking-wider" style={{ color: '#5A7090' }}>
+        Payment Methods
+      </p>
+      <div className="rounded-2xl border border-white/[0.06] overflow-hidden" style={{ background: '#131B24' }}>
+        {carriers.map((c, i) => {
+          const s = CARRIER_STYLE[c];
+          return (
+            <div
+              key={c}
+              className={`flex items-center gap-4 px-4 py-4 ${i < carriers.length - 1 ? 'border-b border-white/[0.05]' : ''}`}
+            >
+              {/* Carrier badge */}
+              <div
+                className="h-10 w-10 shrink-0 rounded-xl flex items-center justify-center text-xs font-black"
+                style={{ background: s.bg, color: s.color }}
+              >
+                {c}
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-bold text-white">{s.label}</p>
+                <p className="text-xs" style={{ color: '#5A7090' }}>
+                  {carrier ? 'Detected from your phone number' : 'Uganda Mobile Money'}
+                </p>
+              </div>
+              <span
+                className="shrink-0 rounded-full px-2 py-0.5 text-[9px] font-bold"
+                style={{ background: 'rgba(93,232,152,0.12)', color: '#5DE898' }}
+              >
+                Active
+              </span>
+            </div>
+          );
+        })}
+
+        {/* Deposit / Withdraw shortcuts */}
+        <div className="flex gap-3 border-t border-white/[0.05] px-4 py-3">
+          <Link
+            href="/deposit"
+            className="flex flex-1 items-center justify-center gap-1.5 rounded-xl py-2.5 text-xs font-black transition-opacity hover:opacity-90"
+            style={{ background: '#F5A623', color: '#0A0E14' }}
+          >
+            Deposit
+          </Link>
+          <Link
+            href="/withdraw"
+            className="flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-white/10 py-2.5 text-xs font-bold text-white/70 hover:bg-white/5 transition-colors"
+          >
+            Withdraw
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 // ── Deposit tab ───────────────────────────────────────────────────────────────
 function DepositTab() {
@@ -356,6 +426,7 @@ const TABS: { value: WalletTab; label: string; icon: string }[] = [
 
 export default function WalletPage() {
   const { isLoggedIn, user } = useAuth();
+  const { countryCode }      = useGeo();
   const [activeTab, setActiveTab] = useState<WalletTab>('deposit');
 
   if (!isLoggedIn || !user) {
@@ -396,6 +467,9 @@ export default function WalletPage() {
           ))}
         </div>
       </div>
+
+      {/* Uganda payment methods */}
+      {countryCode === 'UG' && <UgandaPaymentMethods phone={user.phone} />}
 
       {/* Tab nav */}
       <div className="sticky top-0 z-10 flex border-b border-white/[0.06]" style={{ background: '#131B24' }}>

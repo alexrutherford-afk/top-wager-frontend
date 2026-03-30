@@ -11,6 +11,7 @@ const TABS = [
   { href: '/crash', icon: '✈️', label: 'Crash', badge: 'HOT', badgeOrange: true },
   { href: '/jackpots', icon: '🏆', label: 'Jackpots' },
   { href: '/bonuses', icon: '🎁', label: 'Promos', badge: 'NEW', badgeOrange: false },
+  { href: '/refer', icon: '🤝', label: 'Refer', badge: '500%', badgeOrange: false },
 ];
 
 export function Nav() {
@@ -160,9 +161,11 @@ export function Nav() {
           <span className="text-[19px]">🏠</span>
           <span className="text-[8.5px] font-semibold">Home</span>
         </Link>
-        <Link href="/slots" className="flex flex-col items-center gap-0.5 px-3 py-1 text-[#5A7090]">
-          <span className="text-[19px]">🎰</span>
-          <span className="text-[8.5px] font-semibold">Casino</span>
+        {/* Replaced Casino/Slots (accessible via top nav tabs) with Refer —
+            Bring a Mate is a key revenue driver and needs to be one tap away */}
+        <Link href="/refer" className={`flex flex-col items-center gap-0.5 px-3 py-1 ${pathname === '/refer' ? 'text-[#F5A623]' : 'text-[#5A7090]'}`}>
+          <span className="text-[19px]">🤝</span>
+          <span className="text-[8.5px] font-semibold">Refer</span>
         </Link>
         {/* Centre button */}
         <div className="flex flex-col items-center gap-0.5 -mt-4">

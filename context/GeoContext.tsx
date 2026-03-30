@@ -45,10 +45,14 @@ export function GeoProvider({ children }: { children: ReactNode }) {
     // Only respect localStorage if the player manually chose a country
     // Auto-detected country is never cached — always re-detect on each visit
     const manualChoice = localStorage.getItem('tw_country_manual');
-    if (manualChoice) {
+    if (manualChoice && !isBlocked(manualChoice)) {
       applyCountry(manualChoice, false);
       setDetected(true);
       return;
+    }
+    // Clear any blocked country from manual storage so VPN users get re-detected on refresh
+    if (manualChoice && isBlocked(manualChoice)) {
+      localStorage.removeItem('tw_country_manual');
     }
     // TODO: Backend — replace with server-side IP check to prevent spoofing
     fetch('https://ipapi.co/json/')
@@ -66,7 +70,12 @@ export function GeoProvider({ children }: { children: ReactNode }) {
 
   const setCountry = (code: string) => {
     // Only persist when player explicitly picks — not on auto-detect
-    localStorage.setItem('tw_country_manual', code);
+    // Never persist blocked countries — so VPN users get re-detected on refresh
+    if (!isBlocked(code)) {
+      localStorage.setItem('tw_country_manual', code);
+    } else {
+      localStorage.removeItem('tw_country_manual');
+    }
     applyCountry(code, true);
   };
 

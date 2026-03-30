@@ -1,0 +1,177 @@
+'use client'
+
+import { useState, useEffect } from 'react'
+
+interface Affiliate {
+  id: string
+  code: string
+  name: string
+  email: string | null
+  revenue_share_pct: number
+  status: string
+  notes: string | null
+  player_count: number
+  created_at: string
+}
+
+export default function AffiliatesPage() {
+  const [affiliates, setAffiliates] = useState<Affiliate[]>([])
+  const [loading, setLoading] = useState(false)
+  const [showForm, setShowForm] = useState(false)
+  const [form, setForm] = useState({ code: '', name: '', email: '', revenue_share_pct: '20', notes: '' })
+  const [formError, setFormError] = useState('')
+  const [saving, setSaving] = useState(false)
+
+  const load = async () => {
+    setLoading(true)
+    const res = await fetch('/api/admin/affiliates')
+    const json = await res.json()
+    setAffiliates(json.affiliates ?? [])
+    setLoading(false)
+  }
+
+  useEffect(() => { load() }, [])
+
+  const handleCreate = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setFormError('')
+    if (!form.code || !form.name || !form.revenue_share_pct) {
+      setFormError('Code, name, and revenue share % are required.')
+      return
+    }
+    setSaving(true)
+    const res = await fetch('/api/admin/affiliates', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        code: form.code,
+        name: form.name,
+        email: form.email || null,
+        revenue_share_pct: Number(form.revenue_share_pct),
+        notes: form.notes || null,
+      }),
+    })
+    const json = await res.json()
+    setSaving(false)
+    if (!res.ok) { setFormError(json.error ?? 'Failed to create'); return }
+    setShowForm(false)
+    setForm({ code: '', name: '', email: '', revenue_share_pct: '20', notes: '' })
+    await load()
+  }
+
+  const INPUT = 'w-full rounded-lg border border-white/10 bg-[#0D1117] px-3 py-2 text-sm text-white outline-none placeholder-white/20'
+  const LABEL = 'mb-1 block text-xs font-bold'
+
+  function fmt(date: string) {
+    return new Date(date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
+  }
+
+  return (
+    <div className="p-6" style={{ background: '#0D1117', minHeight: '100vh' }}>
+      <div className="mb-5 flex items-center justify-between">
+        <div>
+          <h1 className="text-xl font-black text-white">Affiliates</h1>
+          <p className="text-xs mt-0.5" style={{ color: '#5A7090' }}>{affiliates.length} affiliates</p>
+        </div>
+        <button
+          onClick={() => setShowForm(v => !v)}
+          className="rounded-xl px-4 py-2 text-sm font-black"
+          style={{ background: '#1A5C38', color: 'white' }}
+        >
+          {showForm ? 'Cancel' : '+ New affiliate'}
+        </button>
+      </div>
+
+      {/* Create Form */}
+      {showForm && (
+        <div className="mb-5 rounded-2xl border border-white/[0.06] p-5" style={{ background: '#131B24' }}>
+          <p className="text-sm font-black text-white mb-4">New Affiliate</p>
+          <form onSubmit={handleCreate} className="grid grid-cols-2 gap-3">
+            <div>
+              <label className={LABEL} style={{ color: '#5A7090' }}>Code</label>
+              <input value={form.code} onChange={e => setForm(f => ({ ...f, code: e.target.value.toUpperCase() }))}
+                placeholder="e.g. PARTNER01" className={INPUT} />
+              <p className="mt-1 text-xs" style={{ color: '#3A4A5A' }}>Used in share links: /join/CODE</p>
+            </div>
+            <div>
+              <label className={LABEL} style={{ color: '#5A7090' }}>Name</label>
+              <input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+                placeholder="e.g. John Smith" className={INPUT} />
+            </div>
+            <div>
+              <label className={LABEL} style={{ color: '#5A7090' }}>Email (optional)</label>
+              <input type="email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
+                placeholder="affiliate@example.com" className={INPUT} />
+            </div>
+            <div>
+              <label className={LABEL} style={{ color: '#5A7090' }}>Revenue Share %</label>
+              <input type="number" min="0" max="100" step="0.5" value={form.revenue_share_pct}
+                onChange={e => setForm(f => ({ ...f, revenue_share_pct: e.target.value }))}
+                placeholder="20" className={INPUT} />
+            </div>
+            <div className="col-span-2">
+              <label className={LABEL} style={{ color: '#5A7090' }}>Notes (optional)</label>
+              <input value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
+                placeholder="Internal notes" className={INPUT} />
+            </div>
+            {formError && (
+              <div className="col-span-2">
+                <p className="rounded-lg border border-red-500/20 bg-red-500/10 px-3 py-2 text-xs text-red-400">{formError}</p>
+              </div>
+            )}
+            <div className="col-span-2">
+              <button type="submit" disabled={saving}
+                className="rounded-xl px-5 py-2.5 text-sm font-black disabled:opacity-50"
+                style={{ background: '#1A5C38', color: 'white' }}>
+                {saving ? 'Creating…' : 'Create affiliate'}
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      {/* Table */}
+      <div className="rounded-2xl border border-white/[0.06] overflow-hidden" style={{ background: '#131B24' }}>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-white/[0.06]">
+                {['Code', 'Name', 'Email', 'Rev Share', 'Players', 'Status', 'Created'].map(h => (
+                  <th key={h} className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide" style={{ color: '#5A7090' }}>{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {loading && (
+                <tr><td colSpan={7} className="px-4 py-8 text-center text-sm" style={{ color: '#5A7090' }}>Loading…</td></tr>
+              )}
+              {!loading && affiliates.length === 0 && (
+                <tr><td colSpan={7} className="px-4 py-8 text-center text-sm" style={{ color: '#5A7090' }}>No affiliates yet</td></tr>
+              )}
+              {!loading && affiliates.map(a => (
+                <tr key={a.id} className="border-b border-white/[0.04]">
+                  <td className="px-4 py-3">
+                    <code className="rounded px-1.5 py-0.5 text-xs font-bold" style={{ background: 'rgba(245,166,35,0.1)', color: '#F5A623' }}>
+                      {a.code}
+                    </code>
+                  </td>
+                  <td className="px-4 py-3 font-semibold text-white">{a.name}</td>
+                  <td className="px-4 py-3 text-xs" style={{ color: '#7A95B0' }}>{a.email || '—'}</td>
+                  <td className="px-4 py-3 font-bold text-white">{a.revenue_share_pct}%</td>
+                  <td className="px-4 py-3 text-center font-semibold text-white">{a.player_count}</td>
+                  <td className="px-4 py-3">
+                    <span className="rounded px-1.5 py-0.5 text-[11px] font-bold capitalize"
+                      style={{ background: a.status === 'active' ? 'rgba(93,232,152,0.1)' : 'rgba(90,112,144,0.12)', color: a.status === 'active' ? '#5DE898' : '#5A7090' }}>
+                      {a.status}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 text-xs whitespace-nowrap" style={{ color: '#5A7090' }}>{fmt(a.created_at)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  )
+}

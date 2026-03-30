@@ -8,6 +8,7 @@ export type AuthUser = {
   id: string;
   email: string;
   name: string;
+  phone?: string;
   currency: string;
   kycStatus: 'not_submitted' | 'pending' | 'verified' | 'rejected';
   vipLevel: number;
@@ -22,7 +23,7 @@ type AuthContextType = {
   session: Session | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<{ error: string | null }>;
-  register: (email: string, password: string, name: string, currency: string) => Promise<{ error: string | null }>;
+  register: (email: string, password: string, name: string, currency: string) => Promise<{ error: string | null; userId?: string }>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
 };
@@ -30,7 +31,7 @@ type AuthContextType = {
 const AuthContext = createContext<AuthContextType>({
   isLoggedIn: false, user: null, session: null, loading: true,
   login: async () => ({ error: null }),
-  register: async () => ({ error: null }),
+  register: async () => ({ error: null, userId: undefined }),
   logout: async () => {},
   refreshUser: async () => {},
 });
@@ -53,6 +54,7 @@ async function fetchPlayerData(userId: string, email: string): Promise<AuthUser 
     id:                 userId,
     email,
     name:               profile.full_name ?? email.split('@')[0],
+    phone:              profile.phone ?? undefined,
     currency:           profile.currency ?? 'EUR',
     kycStatus:          profile.kyc_status ?? 'not_submitted',
     vipLevel:           profile.vip_level ?? 0,
@@ -100,18 +102,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     password: string,
     name: string,
     currency: string = 'EUR'
-  ): Promise<{ error: string | null }> => {
-    const { error } = await supabase.auth.signUp({
+  ): Promise<{ error: string | null; userId?: string }> => {
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
         data: { full_name: name, currency },
-        // TODO: set emailRedirectTo to your production domain when going live
+        // TODO: set emailRedirectTo to production domain before go-live
         // emailRedirectTo: 'https://topwager.com/auth/callback'
       },
     });
     if (error) return { error: error.message };
-    return { error: null };
+    return { error: null, userId: data.user?.id };
   };
 
   const logout = async () => {

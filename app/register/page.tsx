@@ -1,12 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { useGeo } from '@/context/GeoContext';
 import { useI18n, Lang, LANG_LABELS } from '@/context/I18nContext';
 import { ALL_SELECTABLE } from '@/data/geoConfig';
+import { getRefCodeCookie, setRefCodeCookie } from '@/lib/referral';
 
 export default function RegisterPage() {
   const { register }                    = useAuth();
@@ -24,6 +25,23 @@ export default function RegisterPage() {
   const [loading,      setLoading]      = useState(false);
   const [errors,       setErrors]       = useState<Record<string,string>>({});
   const [submitError,  setSubmitError]  = useState('');
+  const [refCode,      setRefCode]      = useState('');
+
+  // Capture affiliate ref code: check cookie first, then URL param.
+  // Store in cookie (30-day, no-overwrite) so it persists across sessions.
+  useEffect(() => {
+    const existing = getRefCodeCookie();
+    if (existing) {
+      setRefCode(existing);
+      return;
+    }
+    const params = new URLSearchParams(window.location.search);
+    const ref = params.get('ref');
+    if (ref) {
+      setRefCodeCookie(ref);
+      setRefCode(ref);
+    }
+  }, []);
 
   const INPUT = 'w-full rounded-xl border border-white/[0.08] bg-[#1A2332] px-4 py-3.5 text-base text-white placeholder-white/30 outline-none focus:border-[#F5A623]/50 transition-colors';
 
@@ -41,11 +59,39 @@ export default function RegisterPage() {
     if (!validate()) return;
     setLoading(true);
     setSubmitError('');
+
     // Full name defaults to email prefix — player can update in account settings
-    const { error } = await register(email, password, email.split('@')[0], countryConfig.currency);
+    const { error, userId } = await register(
+      email,
+      password,
+      email.split('@')[0],
+      countryConfig.currency
+    );
+
+    if (error) {
+      setLoading(false);
+      setSubmitError(error);
+      return;
+    }
+
+    // Save phone, currency, country, and affiliate ref to profile
+    if (userId) {
+      const fullPhone = phone ? `${countryConfig.callingCode}${phone.trim()}` : undefined;
+      await fetch('/api/register/complete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId,
+          phone:    fullPhone,
+          currency: countryConfig.currency,
+          country:  countryConfig.code,
+          refCode:  refCode || promoCode || undefined,
+        }),
+      });
+      // Non-blocking — account was created regardless of whether this succeeds
+    }
+
     setLoading(false);
-    if (error) { setSubmitError(error); return; }
-    // TODO: Backend — save phone, promoCode, currency to profiles table
     router.push('/register/confirm');
   };
 
@@ -155,8 +201,18 @@ export default function RegisterPage() {
             {errors.password && <p className="mt-1 text-xs text-red-400">{errors.password}</p>}
           </div>
 
+          {/* Referred-by code (read-only — set from ?ref= URL param or cookie) */}
+          {refCode && (
+            <div className="flex items-center gap-2 rounded-xl border border-[#F5A623]/30 bg-[#1A2332] px-4 py-3">
+              <span className="text-xs font-semibold" style={{ color: '#5A7090' }}>Referred by</span>
+              <span className="flex-1 text-sm font-black" style={{ color: '#F5A623' }}>{refCode}</span>
+              <span className="rounded px-2 py-0.5 text-[9px] font-black uppercase tracking-wider"
+                style={{ background: 'rgba(245,166,35,0.15)', color: '#F5A623' }}>Bonus Applied</span>
+            </div>
+          )}
+
           {/* Promo code */}
-          {!showPromo ? (
+          {!refCode && (!showPromo ? (
             <button type="button" onClick={() => setShowPromo(true)}
               className="text-sm font-semibold" style={{ color: '#F5A623' }}>
               + Add promo code
@@ -169,7 +225,7 @@ export default function RegisterPage() {
               placeholder="Promo code (optional)"
               className={INPUT}
             />
-          )}
+          ))}
 
           {/* T&C */}
           <label className="flex cursor-pointer items-start gap-3 pt-1">

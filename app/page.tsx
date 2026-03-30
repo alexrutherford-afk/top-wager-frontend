@@ -5,6 +5,17 @@ import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
 import { GAMES, type Game } from '@/data/games';
 
+// ── Mock bonus data ───────────────────────────────────────────────────────────
+// TODO: replace with real active bonus from /api/bonuses/active
+const MOCK_ACTIVE_BONUS = {
+  label:   'Welcome Bonus',
+  amount:  50_000,
+  wagered: 112_400,
+  target:  250_000,
+};
+// TODO: replace with real referral stats from /api/affiliates/me
+const MOCK_HAS_REFERRED = false; // false = show Bring a Mate banner
+
 // ── Helpers ───────────────────────────────────────────────────────────────────
 const fmt = (n: number) => n.toLocaleString();
 
@@ -238,6 +249,95 @@ function SectionHeader({ icon, title, href }: { icon: string; title: string; hre
 
 const Separator = () => <div className="h-[5px] border-t border-b border-white/[0.04]" style={{ background: '#131B24' }} />;
 
+// ── Bonus Progress Widget ─────────────────────────────────────────────────────
+function BonusProgressWidget() {
+  const pct = Math.min(100, Math.round((MOCK_ACTIVE_BONUS.wagered / MOCK_ACTIVE_BONUS.target) * 100));
+  return (
+    <div
+      className="mx-3 mt-2 rounded-2xl px-4 py-3 border"
+      style={{ background: '#131B24', borderColor: 'rgba(58,158,103,0.25)' }}
+    >
+      <div className="flex items-center justify-between mb-2">
+        <div>
+          <span className="text-[9px] font-bold uppercase tracking-widest" style={{ color: '#5A7090' }}>Active Bonus</span>
+          <p className="text-sm font-black text-white leading-tight">{MOCK_ACTIVE_BONUS.label}</p>
+        </div>
+        <div className="text-right">
+          <p className="text-sm font-black" style={{ color: '#F5A623' }}>
+            {MOCK_ACTIVE_BONUS.amount.toLocaleString()} UGX
+          </p>
+          <Link href="/refer" className="text-[9.5px] font-semibold" style={{ color: '#3A9E67' }}>
+            View details →
+          </Link>
+        </div>
+      </div>
+      <div className="relative h-2.5 w-full overflow-hidden rounded-full" style={{ background: '#1A2332' }}>
+        <div
+          className="absolute left-0 top-0 h-full rounded-full"
+          style={{
+            width: `${pct}%`,
+            background: 'linear-gradient(90deg, #1A5C38, #3A9E67)',
+            boxShadow: '0 0 6px rgba(58,158,103,0.45)',
+          }}
+        />
+      </div>
+      <p className="mt-1.5 text-[9px]" style={{ color: '#5A7090' }}>
+        {MOCK_ACTIVE_BONUS.wagered.toLocaleString()} / {MOCK_ACTIVE_BONUS.target.toLocaleString()} UGX wagered &nbsp;·&nbsp;
+        <span style={{ color: '#5DE898', fontWeight: 700 }}>{pct}% complete</span>
+      </p>
+    </div>
+  );
+}
+
+// ── Referral Banner ───────────────────────────────────────────────────────────
+function ReferralBanner({ onDismiss }: { onDismiss: () => void }) {
+  return (
+    <div
+      className="mx-3 mt-2 rounded-2xl overflow-hidden relative border"
+      style={{
+        background: 'linear-gradient(125deg, #100C00 0%, #201800 55%, #1A1200 100%)',
+        borderColor: 'rgba(245,166,35,0.25)',
+      }}
+    >
+      <div className="absolute inset-0" style={{ background: 'radial-gradient(ellipse at 90% 50%, rgba(245,166,35,0.12) 0%, transparent 60%)' }} />
+      <div className="relative flex items-center gap-3 px-4 py-3">
+        <div className="flex-1">
+          <div className="mb-1 inline-flex items-center gap-1 rounded px-2 py-0.5 text-[8px] font-black uppercase tracking-wider"
+            style={{ background: 'rgba(245,166,35,0.15)', color: '#F5A623', border: '1px solid rgba(245,166,35,0.3)' }}>
+            Bring a Mate
+          </div>
+          <p className="text-sm font-black text-white leading-tight">
+            Invite a friend,<br />
+            <span style={{ color: '#F5A623' }}>earn 500% bonus</span>
+          </p>
+          <p className="mt-0.5 text-[10px]" style={{ color: '#7A95B0' }}>
+            Both of you get rewarded
+          </p>
+          <Link
+            href="/refer"
+            className="mt-2 inline-block rounded-full px-4 py-1.5 text-xs font-black text-[#0A0E14]"
+            style={{ background: '#F5A623' }}
+          >
+            Get my link →
+          </Link>
+        </div>
+        <div className="shrink-0 text-[52px] leading-none opacity-60">
+          🤝
+        </div>
+      </div>
+      {/* Dismiss */}
+      <button
+        onClick={onDismiss}
+        className="absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full text-xs font-black"
+        style={{ background: 'rgba(0,0,0,0.4)', color: '#5A7090' }}
+        aria-label="Dismiss"
+      >
+        ×
+      </button>
+    </div>
+  );
+}
+
 // ── Welcome back bar ──────────────────────────────────────────────────────────
 function WelcomeBar({ name }: { name: string }) {
   return (
@@ -255,6 +355,10 @@ export default function LobbyPage() {
   const { isLoggedIn, user } = useAuth();
   const [activeCat, setActiveCat] = useState('all');
   const [gameTab, setGameTab] = useState('All');
+  const [referralBannerDismissed, setReferralBannerDismissed] = useState(false);
+
+  // Persist dismissal for the session (resets on page reload)
+  const dismissReferralBanner = () => setReferralBannerDismissed(true);
 
   const filteredGames = GAMES.filter((g) => {
     if (activeCat === 'all') return true;
@@ -270,6 +374,16 @@ export default function LobbyPage() {
 
       {/* Welcome bar (logged in) */}
       {isLoggedIn && user && <WelcomeBar name={user.name.split(' ')[0]} />}
+
+      {/* Bonus wagering progress — logged-in users with an active bonus only */}
+      {/* TODO: replace MOCK_ACTIVE_BONUS with real data from /api/bonuses/active */}
+      {isLoggedIn && user && <BonusProgressWidget />}
+
+      {/* Bring a Mate referral banner — logged-in users who haven't referred anyone yet */}
+      {/* TODO: replace MOCK_HAS_REFERRED with real check from /api/affiliates/me */}
+      {isLoggedIn && user && !MOCK_HAS_REFERRED && !referralBannerDismissed && (
+        <ReferralBanner onDismiss={dismissReferralBanner} />
+      )}
 
       {/* Banner carousel */}
       <BannerCarousel />
