@@ -378,6 +378,21 @@ created_at timestamptz default now()
 last_login timestamptz
 ```
 
+**`public.banners`** ✓
+```sql
+id uuid PRIMARY KEY default gen_random_uuid()
+title text NOT NULL
+image_url text NOT NULL
+link_url text
+position text NOT NULL  -- 'lobby_hero' | 'lobby_promo' | 'deposit_page'
+market_scope text[]     -- null = all markets
+is_active boolean default true
+sort_order integer default 0
+created_at timestamptz default now()
+updated_at timestamptz default now()
+```
+**Storage:** `banners` bucket (public read). Images uploaded via `/api/admin/banners/upload`.
+
 **Auto-trigger:** `on_auth_user_created` → `handle_new_user()` → auto-creates `profiles` + `wallets`.
 **RLS:** Enabled on all tables. Players read own rows only. Sensitive tables (affiliates, admin_users, bonus_templates, affiliate_payouts) are service-role-only.
 
@@ -450,7 +465,10 @@ topwager/
 │   ├── (dashboard)/players/        # Player list/search + [id] detail + manual adjustment
 │   ├── (dashboard)/bonuses/        # Bonus template list/create/toggle
 │   ├── (dashboard)/affiliates/     # Affiliate list/create
+│   ├── (dashboard)/banners/        # Banner upload/manage (content_manager role)
 │   └── _components/AdminSidebar.tsx
+│
+├── app/api/banners/route.ts            # Public — GET active banners by position (called by frontend)
 │
 ├── app/api/admin/
 │   ├── auth/check/route.ts         # Verify admin role after login
@@ -460,7 +478,10 @@ topwager/
 │   ├── players/[id]/route.ts       # Player detail
 │   ├── players/[id]/adjust/route.ts # Manual credit/debit (logged, requires reason)
 │   ├── bonuses/route.ts            # List + create bonus templates
-│   └── bonuses/[id]/route.ts       # Toggle is_active
+│   ├── bonuses/[id]/route.ts       # Toggle is_active
+│   ├── banners/route.ts            # List + create banners
+│   ├── banners/[id]/route.ts       # Toggle active / delete
+│   └── banners/upload/route.ts     # Upload image to Supabase Storage → returns public URL
 │
 ├── lib/
 │   ├── admin-auth.ts               # getAdminUser() / hasRole() / requireAdmin()
@@ -708,3 +729,4 @@ git push
 | 2026-03-30 | Bring a Mate / referral programme — `/refer` page, `/join/[code]` tracking route, cookie-based ref capture on register, lobby bonus widget + referral banner, nav updates. All frontend, all mock data. |
 | 2026-03-30 | Phase 1 complete — `lib/wallet.ts`, `lib/supabase-server.ts`, wallet API routes (balance/credit/debit), `/api/register/complete`. Full schema migration run in Supabase: transactions, game_rounds, affiliates, affiliate_payouts, bonus_templates, player_bonuses, admin_users. affiliate_id added to profiles. Phase 2 (Flutterwave) is next. |
 | 2026-03-30 | Phase 5 complete — Full backoffice at `/admin`. Admin auth (`lib/admin-auth.ts`, `middleware.ts`), login page, role-gated layout + sidebar. Dashboard (GGR, deposits, players, bonus liability). Transaction log (filterable, paginated). Player list/search + detail + manual adjustment (logged with reason). Bonus template management (list/create/toggle). Affiliate management (list/create with player count). `components/PlayerShell.tsx` added — root layout now admin-clean. All API routes in `app/api/admin/`. To create the first admin user: insert a row into `admin_users` in Supabase with the email of a Supabase auth account + appropriate role. |
+| 2026-03-31 | Banner CMS added — `banners` table + Supabase Storage bucket `banners` (public). Admin `/admin/banners` page with image upload, position selector, sort order, toggle active/delete. `content_manager` role added to sidebar. Public `/api/banners` route for frontend. Lobby wired to fetch `lobby_hero` banners — shows CMS images when uploaded, falls back to hardcoded carousel if none. |

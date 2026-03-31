@@ -76,6 +76,18 @@ const NAV_ITEMS = [
       </svg>
     ),
   },
+  {
+    href: '/admin/banners',
+    label: 'Banners',
+    exact: false,
+    roles: ['content_manager', 'super_admin'],
+    icon: (
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
+        <rect x="1" y="3" width="14" height="10" rx="1" />
+        <path d="M1 6h14" />
+      </svg>
+    ),
+  },
 ]
 
 function canSee(item: typeof NAV_ITEMS[0], roles: string[]): boolean {

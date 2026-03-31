@@ -44,7 +44,54 @@ function Ticker({ loggedIn, firstName }: { loggedIn: boolean; firstName?: string
   );
 }
 
-// ── Banner Carousel ───────────────────────────────────────────────────────────
+// ── CMS Banner Carousel ───────────────────────────────────────────────────────
+interface CmsBanner { id: string; title: string; image_url: string; link_url: string | null }
+
+function CmsBannerCarousel({ banners }: { banners: CmsBanner[] }) {
+  const [active, setActive] = useState(0);
+  const [touchStartX, setTouchStartX] = useState<number | null>(null);
+  const next = useCallback(() => setActive((a) => (a + 1) % banners.length), [banners.length]);
+  const prev = useCallback(() => setActive((a) => (a - 1 + banners.length) % banners.length), [banners.length]);
+
+  useEffect(() => {
+    if (banners.length < 2) return;
+    const t = setInterval(next, 5000);
+    return () => clearInterval(t);
+  }, [next, banners.length]);
+
+  const b = banners[active];
+  const content = (
+    <div
+      className="relative overflow-hidden"
+      style={{ height: 160 }}
+      onTouchStart={(e) => setTouchStartX(e.touches[0].clientX)}
+      onTouchEnd={(e) => {
+        if (touchStartX === null) return;
+        const diff = touchStartX - e.changedTouches[0].clientX;
+        if (diff > 50) next(); else if (diff < -50) prev();
+        setTouchStartX(null);
+      }}
+    >
+      <img src={b.image_url} alt={b.title} className="absolute inset-0 h-full w-full object-cover" />
+    </div>
+  );
+
+  return (
+    <div style={{ background: '#131B24' }}>
+      {b.link_url ? <a href={b.link_url}>{content}</a> : content}
+      {banners.length > 1 && (
+        <div className="flex justify-center gap-1.5 py-2">
+          {banners.map((_, i) => (
+            <button key={i} onClick={() => setActive(i)} className="rounded-full transition-all duration-300"
+              style={{ width: i === active ? 16 : 5, height: 5, background: i === active ? '#F5A623' : '#283848' }} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Banner Carousel (hardcoded fallback) ──────────────────────────────────────
 const BANNERS_GUEST = [
   {
     bg: 'linear-gradient(125deg,#060F0A 0%,#0F2318 45%,#1A3020 100%)',
@@ -356,6 +403,14 @@ export default function LobbyPage() {
   const [activeCat, setActiveCat] = useState('all');
   const [gameTab, setGameTab] = useState('All');
   const [referralBannerDismissed, setReferralBannerDismissed] = useState(false);
+  const [heroBanners, setHeroBanners] = useState<CmsBanner[]>([]);
+
+  useEffect(() => {
+    fetch('/api/banners?position=lobby_hero')
+      .then(r => r.json())
+      .then(j => { if (j.banners?.length) setHeroBanners(j.banners) })
+      .catch(() => {})
+  }, []);
 
   // Persist dismissal for the session (resets on page reload)
   const dismissReferralBanner = () => setReferralBannerDismissed(true);
@@ -385,8 +440,8 @@ export default function LobbyPage() {
         <ReferralBanner onDismiss={dismissReferralBanner} />
       )}
 
-      {/* Banner carousel */}
-      <BannerCarousel />
+      {/* Banner carousel — CMS banners when available, hardcoded fallback otherwise */}
+      {heroBanners.length > 0 ? <CmsBannerCarousel banners={heroBanners} /> : <BannerCarousel />}
 
       {/* Jackpot bar */}
       <JackpotBar />
