@@ -146,9 +146,9 @@ export default async function AdminDashboard() {
         </div>
       </div>
 
-      <p className="text-xs" style={{ color: '#3A4A5A' }}>
-        GGR shown as deposits minus withdrawals — replace with game_rounds data once game integration is live.
-      </p>
+      <div className="rounded-xl border border-white/[0.04] px-4 py-2.5 text-xs" style={{ background: '#131B24', color: '#5A7090' }}>
+        <span className="font-semibold" style={{ color: '#7A95B0' }}>GGR note:</span> currently shown as deposits minus withdrawals. This is a proxy until game integration is live, at which point it will be calculated from actual game rounds (total bets minus total wins).
+      </div>
     </div>
   )
 }

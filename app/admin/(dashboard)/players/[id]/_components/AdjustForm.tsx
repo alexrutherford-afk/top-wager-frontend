@@ -58,6 +58,12 @@ export function AdjustForm({ playerId }: Props) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-3">
+      <div className="rounded-lg px-3 py-2.5 text-xs space-y-1" style={{ background: 'rgba(255,255,255,0.03)', color: '#5A7090' }}>
+        <p><span className="font-semibold" style={{ color: '#7A95B0' }}>Credit</span> — adds funds to the player's balance.</p>
+        <p><span className="font-semibold" style={{ color: '#7A95B0' }}>Debit</span> — removes funds. Will fail if balance is insufficient.</p>
+        <p><span className="font-semibold" style={{ color: '#7A95B0' }}>Cash vs Bonus</span> — cash is real money. Bonus funds have wagering requirements attached.</p>
+        <p style={{ color: '#3A4A5A' }}>Every adjustment is logged with your name, the amount, and the reason. Reason is required.</p>
+      </div>
       <div className="grid grid-cols-2 gap-2">
         <div>
           <label className="mb-1 block text-xs font-bold" style={{ color: '#5A7090' }}>Direction</label>

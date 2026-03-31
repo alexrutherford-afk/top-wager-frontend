@@ -112,6 +112,17 @@ export default function BonusesPage() {
         </button>
       </div>
 
+      {/* Help */}
+      <div className="mb-5 rounded-xl border border-white/[0.06] px-4 py-3 text-xs space-y-1.5" style={{ background: '#131B24', color: '#7A95B0' }}>
+        <p className="font-bold text-white text-sm">How bonus templates work</p>
+        <p><span className="font-semibold" style={{ color: '#F5A623' }}>Trigger</span> — when the bonus fires. <span className="text-white">first_deposit</span> = on their very first deposit. <span className="text-white">deposit</span> = on any deposit. <span className="text-white">register</span> = on sign-up. <span className="text-white">manual</span> = ops team awards it directly from the player page.</p>
+        <p><span className="font-semibold" style={{ color: '#F5A623' }}>Reward value</span> — for <span className="text-white">deposit_match</span>, this is the percentage (e.g. 100 = 100% match). For <span className="text-white">free_bonus_cash</span>, it's a fixed amount in the player's currency. For <span className="text-white">free_spins</span>, it's the number of spins.</p>
+        <p><span className="font-semibold" style={{ color: '#F5A623' }}>Wagering requirement</span> — how many times the player must wager the bonus before they can withdraw. 30× on a 10,000 UGX bonus = player must wager 300,000 UGX.</p>
+        <p><span className="font-semibold" style={{ color: '#F5A623' }}>Activation expiry</span> — hours the player has to accept/activate the bonus before it disappears. 72 = 3 days.</p>
+        <p><span className="font-semibold" style={{ color: '#F5A623' }}>Wagering expiry</span> — hours to complete wagering after activating. 168 = 7 days. If not completed in time, the bonus is cancelled.</p>
+        <p><span className="font-semibold" style={{ color: '#F5A623' }}>Max withdrawal</span> — caps how much a player can withdraw from winnings made with bonus funds. Leave blank for no cap.</p>
+      </div>
+
       {/* Create Form */}
       {showForm && (
         <div className="mb-5 rounded-2xl border border-white/[0.06] p-5" style={{ background: '#131B24' }}>

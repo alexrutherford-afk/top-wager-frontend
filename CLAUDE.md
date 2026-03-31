@@ -1,7 +1,23 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
 # TopWager — Claude Master Brief
 
 Read this file at the start of every session. Do not proceed without reading it fully.
 Update this file when: schema changes, new integrations added, architectural decisions made, new pages/components created, or product decisions confirmed.
+
+---
+
+## Commands
+
+```bash
+npm run dev      # Start local dev server (Next.js, http://localhost:3000)
+npm run build    # Production build — run before pushing if making structural changes
+npm run lint     # ESLint check
+```
+
+No test suite exists. There is no `test` script.
 
 ---
 
@@ -12,10 +28,9 @@ Update this file when: schema changes, new integrations added, architectural dec
 - **Live URL:** https://top-wager-frontend.vercel.app
 - **GitHub:** alexrutherford-afk/top-wager-frontend
 - **Licence:** Tobique First Nation (Canada) — multi-jurisdictional
-- **Launch market:** Uganda. Rollout: Kenya, Tanzania, Zambia, Malawi + anywhere with workable payments
-- **Model:** House edge. Mass market, mobile-first, casino-first. Sportsbook planned for later.
+- **Launch market:** Uganda. Rollout: Kenya, Tanzania, Zambia, Malawi
 - **Deployment:** Vercel — auto-deploys on push to `main` (~1 min)
-- **Owner:** Non-technical, solo operator at launch. Keep code clean, avoid over-engineering, explain non-obvious decisions briefly.
+- **Owner:** Non-technical, solo operator at launch. Keep code clean, avoid over-engineering.
 
 ---
 
@@ -35,27 +50,21 @@ Update this file when: schema changes, new integrations added, architectural dec
 
 ## Architecture Rules — Read Before Writing Any Code
 
-Non-negotiable. If a task would require breaking one of these, stop and flag it.
+Non-negotiable. Flag any task that would break these before proceeding.
 
 ### 1. Wallet is the source of truth
-- All balance reads come from `wallets` table via Supabase
-- All balance mutations happen via API routes in `app/api/` — never direct from client
-- Client never writes to `wallets` directly, even with RLS in place
+- All balance reads from `wallets` table via Supabase
+- All balance mutations via API routes in `app/api/` — never direct from client
 - Every balance movement must write to `transactions` table — no exceptions
 - Bonus balance and cash balance are always separate ledger entries
 
-### 2. Transactions table must exist before any real money moves
-- Do not wire up any payment provider until `transactions` table is live and wallet API routes are tested
-- This is the non-negotiable first backend task
-
-### 3. All third-party integrations go through `lib/integrations/`
+### 2. All third-party integrations go through `lib/integrations/`
 - Payment providers: `lib/integrations/payments/{provider}/`
 - Game providers: `lib/integrations/games/{provider}/`
 - KYC tools: `lib/integrations/kyc/{provider}/`
-- Each integration exports a standard interface (see Integration Contracts below)
 - API routes call integration modules — pages never call third-party APIs directly
 
-### 4. API routes own all sensitive operations
+### 3. API routes own all sensitive operations
 - `app/api/wallet/` — credit, debit, balance
 - `app/api/games/` — session creation, callbacks
 - `app/api/payments/` — initiate, callback, webhook verification
@@ -63,29 +72,28 @@ Non-negotiable. If a task would require breaking one of these, stop and flag it.
 - `app/api/admin/` — all backoffice operations (role-gated)
 - `app/api/affiliates/` — tracking, stats
 
-### 5. Geo enforcement is server-side for all financial operations
-- Client-side GeoContext is for UX only (currency display, payment method options, language)
+### 4. Geo enforcement is server-side for all financial operations
+- Client-side GeoContext is for UX only (currency display, payment options, language)
 - All API routes independently verify country — never trust client-passed country values
 
-### 6. No hardcoded provider logic in shared components
+### 5. No hardcoded provider logic in shared components
 - `GameCard.tsx`, `Nav.tsx`, and all UI components are provider-agnostic
 - Game launch URLs and provider tokens come from API routes only
 
-### 7. Backoffice is role-gated at the API level
+### 6. Backoffice is role-gated at the API level
 - Every `app/api/admin/` route checks the caller's role before executing
-- Role checks happen in middleware, not inside individual route handlers
+- Role checks in middleware, not inside individual route handlers
 - Never gate on client-side role state alone
 
-### 8. Affiliate tag is captured at registration and never changes
+### 7. Affiliate tag is captured at registration and never changes
 - Every player row carries an `affiliate_id` (nullable)
 - Set once on registration from URL param `?ref=CODE` — never overwritten
 - All revenue calculations reference this field
 
-### 9. Architecture must support multi-market from day one
+### 8. Architecture must support multi-market from day one
 - Currency is always player-facing local currency — never assume a single currency
-- Payment provider selection is driven by `geoConfig` market settings, not hardcoded
+- Payment provider selection driven by `geoConfig` market settings, not hardcoded
 - Bonus templates can be market-scoped or global
-- Game availability can be restricted by market
 
 ---
 
@@ -93,7 +101,6 @@ Non-negotiable. If a task would require breaking one of these, stop and flag it.
 
 Every integration module must implement its category's standard interface.
 
-### Payment Provider
 ```ts
 // lib/integrations/payments/{provider}/index.ts
 export interface PaymentProvider {
@@ -103,10 +110,7 @@ export interface PaymentProvider {
   verifyWebhook(payload: unknown, signature: string): boolean
   healthCheck(): Promise<boolean>
 }
-```
 
-### Game Provider
-```ts
 // lib/integrations/games/{provider}/index.ts
 export interface GameProvider {
   getLaunchUrl(params: GameLaunchParams): Promise<string>
@@ -117,130 +121,101 @@ export interface GameProvider {
 }
 ```
 
-### Provider Registry
-```ts
-// lib/integrations/registry.ts
-// Register all active providers here — no provider logic anywhere else
-```
-
-When adding a new provider: create its folder, implement the interface, register in `registry.ts`. No other files need to change.
+When adding a new provider: create its folder, implement the interface, register in `lib/integrations/registry.ts`. No other files need to change.
 
 ---
 
 ## Payment Strategy
 
 - **Telco/mobile money is non-negotiable** in every market — primary payment rail
-- **First provider to build:** Flutterwave (widest African coverage, most documented)
+- **First provider to build:** Flutterwave (widest African coverage)
 - **Additional providers:** Flexify, Bisotech — added once pattern is established
-- **Future layers:** Crypto, cards, bank transfer — architecture must not prevent these
-- **Settlement:** Aggregator settles in agreed currency — confirm FX exposure per provider before signing
 - **Player currency:** Always local. UGX for Uganda, KES for Kenya, etc.
-
-Provider selection per market is driven by `geoConfig` — not hardcoded in routes.
+- Provider selection per market driven by `geoConfig` — not hardcoded in routes
 
 ---
 
 ## Game Strategy
 
-- **Aggregator:** Bitville (not yet signed — integration is speculative until confirmed)
+- **Aggregator:** Bitville (not yet signed — speculative until confirmed)
 - **Must-have:** Aviator by Spribe — **verify Bitville carries Spribe before building game integration**
 - **Verticals at launch:** Slots, Live Casino, Crash/Instant games
-- **Sportsbook:** Future — wallet, transaction types, and bonus engine must be architected to support it
-- **Game availability:** Can be restricted by market via game metadata
+- **Sportsbook:** Future phase — wallet and bonus engine are architected to support it
 
 ---
 
 ## Affiliate System
 
-### Model
-- Revenue share per affiliate — rate varies, set per affiliate record
-- Tracked via `affiliate_id` on every player — set at registration from URL param `?ref=CODE`
-- Revenue = NGR (Net Gaming Revenue) attributed to that affiliate's players
-
-### Phases
-- **Phase 1 (launch):** Tracking only. Affiliate data in operator backoffice. Affiliates managed manually.
-- **Phase 2 (post-launch):** Affiliate self-serve portal with own login, dashboard, stats.
-
-### Affiliate Record
-- Code, name, contact, revenue share %, attributed players, total NGR, commission owed/paid
+- Revenue share per affiliate — rate set per affiliate record
+- Tracked via `affiliate_id` on every player — set at registration from `?ref=CODE`
+- Revenue = NGR attributed to that affiliate's players
+- **Phase 1 (live):** Tracking + backoffice management only
+- **Phase 2:** Affiliate self-serve portal (Phase 6 in build sequence)
 
 ---
 
 ## Bonus Engine
 
 ### Triggers
-- `register` — on account creation
-- `first_deposit` — first successful deposit
-- `deposit` — any deposit (optional min amount condition)
-- `deposit_over_amount` — deposit >= X
-- `cumulative_bets` — total wagered reaches X
-- `cumulative_losses` — net loss reaches X (cashback)
-- `manual` — ops team awards directly
+`register` | `first_deposit` | `deposit` | `deposit_over_amount` | `cumulative_bets` | `cumulative_losses` | `manual`
 
-### Rewards
-- `deposit_match` — % of deposit up to max, credited to bonus balance
-- `free_spins` — count + game restriction + value per spin
-- `free_bonus_cash` — fixed amount to bonus balance
+### Reward types
+`deposit_match` | `free_spins` | `free_bonus_cash`
 
-### Rules on every bonus template
-- `wagering_requirement` — multiplier (e.g. 30x)
-- `game_restrictions` — allowed/excluded game IDs or categories
-- `activation_expiry_hours` — hours before unactivated bonus expires
-- `wagering_expiry_hours` — hours to complete wagering once activated
-- `max_withdrawal` — cap on withdrawable winnings from bonus
-- `min_deposit` — minimum deposit to trigger (where applicable)
-- `market_scope` — country codes array, null = global
+### Key rules
+- Template params are **snapshotted into `player_bonuses` at award time** — runtime never re-reads `bonus_templates`. Players are protected from template edits after award.
+- `max_withdrawal` is an absolute amount cap (not a multiplier). If null, entire bonus balance converts to cash on WR completion.
+- Bonus balance stays separate from cash at all times; expired/forfeited bonuses are voided, never converted.
+- `gross_gaming_revenue` in `bonus_events` is a placeholder (`total_wagered × 0.04`) — replace with actual game round revenue in Phase 3.
 
-### Bonus Balance Rules
-- Bonus balance always separate from cash balance
-- Winnings from bonus play stay in bonus balance until wagering complete
-- On completion, bonus winnings transfer to cash balance up to `max_withdrawal`
-- Expired/cancelled bonuses removed from bonus balance — never converted to cash
+### Bonus engine modules (`lib/bonus/` — server-side only, never import from client)
+| File | Purpose |
+|------|---------|
+| `awardBonus.ts` | Award from template — validates, snapshots, credits bonus_balance |
+| `processWager.ts` | Post-round WR contribution — call from game callback (Phase 3) |
+| `completeBonus.ts` | WR complete / expired / forfeited — transfers or voids balance |
+| `checkWithdrawalAllowed.ts` | Pre-withdrawal check — forfeits active bonus if present (wire in Phase 2) |
+| `validateBet.ts` | Pre-bet check — enforces max_bet_limit during active bonus (wire in Phase 3) |
+
+**Cron:** `GET /api/cron/expire-bonuses` — auth via `Authorization: Bearer CRON_SECRET`. Runs hourly via `vercel.json`. Processes bonuses independently — single failure never stops the batch.
 
 ---
 
 ## Backoffice
 
-### Role Model
-Roles are additive — a user can hold multiple.
-
+### Roles (additive — a user can hold multiple)
 | Role | Permissions |
 |------|-------------|
-| `super_admin` | Everything — no restrictions |
-| `operations` | Player management, manual adjustments, bonus management |
+| `super_admin` | Everything |
+| `operations` | Player management, adjustments, bonus management |
 | `finance` | Transaction history, reports, withdrawal approval |
 | `support` | Player view (read only), password reset, account unlock |
 | `affiliate_manager` | Affiliate reporting and management only |
+| `content_manager` | Banner CMS |
 
-### Features at Launch
-- **Dashboard:** GGR by market, deposits/withdrawals by day, active players, bonus liability
-- **Player management:** Search, view profile, transaction history, manual balance adjustment, bonus award, account lock/unlock
-- **Transaction log:** Full log, filter by type/status/market/provider, manual status override
-- **Bonus management:** Create/edit/deactivate templates, view active player bonuses, manual award
-- **Affiliate management:** Create affiliate, set revenue share, view attributed players and NGR, mark commission paid
-- **Reporting:** GGR, deposits, withdrawals, bonuses, player counts — by market and date range
-
-### Manual Adjustment Rules
-- Every manual adjustment requires a reason (text field)
-- Logged with timestamp and the admin user who made it
-- Triggers: failed transaction, goodwill gesture, system error correction
+### Manual adjustment rules
+- Every adjustment requires a reason (text field)
+- Logged with timestamp + admin user
+- To create the first admin user: insert into `admin_users` in Supabase with a Supabase auth account email + roles array
 
 ---
 
 ## KYC Strategy
 
-- **For now:** Light touch. Telco-only markets self-KYC via registered SIM.
-- **Mandatory KYC trigger:** To confirm with Tobique — likely card payments or deposit threshold
-- **When cards/crypto added:** Full KYC flow — provider TBD (Sumsub or Onfido)
-- **Current approach:** Track `kyc_status` on profile. Gate withdrawals above threshold if required.
+- **Now:** Light touch. Telco-only markets self-KYC via registered SIM.
+- **Trigger:** Confirm with Tobique — likely card payments or deposit threshold
+- **When cards/crypto added:** Full KYC — provider TBD (Sumsub or Onfido)
+- Track `kyc_status` on profile. Gate withdrawals above threshold if required.
 
 ---
 
 ## Database Schema
 
-### Live in Supabase ✓
+All tables live in Supabase. Migration files in `supabase/`.
 
-All tables below are live. Migration script at `supabase/phase1_migration.sql`.
+**Auto-trigger:** `on_auth_user_created` → `handle_new_user()` → auto-creates `profiles` + `wallets`.
+
+**RLS:** Enabled on all tables. Players read own rows only. Ops tables (`affiliates`, `admin_users`, `bonus_templates`, `affiliate_payouts`, `game_whitelist`, `bonus_events`) are service-role-only.
 
 **`public.profiles`**
 ```sql
@@ -252,7 +227,7 @@ currency text default 'EUR'
 kyc_status text default 'not_submitted'
 vip_level integer default 0
 marketing_opt_in boolean default false
-affiliate_id uuid nullable  -- FK → affiliates.id, set at registration, never changed ✓
+affiliate_id uuid nullable  -- FK → affiliates.id, set once at registration, never changed
 created_at timestamptz
 updated_at timestamptz
 ```
@@ -266,13 +241,13 @@ bonus_balance numeric(12,2) default 0.00
 pending_withdrawal numeric(12,2) default 0.00
 ```
 
-**`public.transactions`** ✓
+**`public.transactions`**
 ```sql
 id uuid PRIMARY KEY default gen_random_uuid()
 player_id uuid NOT NULL (FK → profiles.id)
 type text NOT NULL
   -- 'deposit' | 'withdrawal' | 'game_debit' | 'game_credit'
-  -- 'bonus_credit' | 'bonus_debit' | 'manual_credit' | 'manual_debit'
+  -- 'bonus_credit' | 'bonus_debit' | 'bonus_void' | 'manual_credit' | 'manual_debit'
 amount numeric(12,2) NOT NULL
 currency text NOT NULL
 status text NOT NULL default 'pending'
@@ -287,7 +262,7 @@ created_at timestamptz default now()
 updated_at timestamptz default now()
 ```
 
-**`public.game_rounds`** ✓
+**`public.game_rounds`**
 ```sql
 id uuid PRIMARY KEY default gen_random_uuid()
 player_id uuid NOT NULL (FK → profiles.id)
@@ -303,7 +278,7 @@ started_at timestamptz default now()
 completed_at timestamptz
 ```
 
-**`public.affiliates`** ✓
+**`public.affiliates`**
 ```sql
 id uuid PRIMARY KEY default gen_random_uuid()
 code text UNIQUE NOT NULL
@@ -315,7 +290,7 @@ notes text
 created_at timestamptz default now()
 ```
 
-**`public.affiliate_payouts`** ✓
+**`public.affiliate_payouts`**
 ```sql
 id uuid PRIMARY KEY default gen_random_uuid()
 affiliate_id uuid NOT NULL (FK → affiliates.id)
@@ -329,7 +304,7 @@ notes text
 created_at timestamptz default now()
 ```
 
-**`public.bonus_templates`** ✓
+**`public.bonus_templates`**
 ```sql
 id uuid PRIMARY KEY default gen_random_uuid()
 name text NOT NULL
@@ -343,13 +318,14 @@ game_restrictions jsonb
 activation_expiry_hours integer
 wagering_expiry_hours integer
 max_withdrawal numeric(12,2)
+max_bet_limit numeric(12,2)
 min_deposit numeric(12,2)
 market_scope text[]
 is_active boolean default true
 created_at timestamptz default now()
 ```
 
-**`public.player_bonuses`** ✓
+**`public.player_bonuses`**
 ```sql
 id uuid PRIMARY KEY default gen_random_uuid()
 player_id uuid NOT NULL (FK → profiles.id)
@@ -359,15 +335,21 @@ reward_type text NOT NULL
 amount numeric(12,2) NOT NULL
 wagering_requirement numeric(5,2) NOT NULL
 wagered_amount numeric(12,2) default 0
-status text NOT NULL
-  -- 'pending' | 'active' | 'completed' | 'expired' | 'cancelled'
+status text NOT NULL  -- 'pending' | 'active' | 'completed' | 'expired' | 'cancelled' | 'forfeited'
+-- Snapshotted from template at award time — never re-read from bonus_templates at runtime:
+max_withdrawal   numeric(12,2)
+max_bet_limit    numeric(12,2)
+game_restrictions jsonb
+trigger          text
+triggered_by     text  -- attribution ID, payment ID, or 'manual'
+currency         text
 activated_at timestamptz
 expires_at timestamptz
 completed_at timestamptz
 created_at timestamptz default now()
 ```
 
-**`public.admin_users`** ✓
+**`public.admin_users`**
 ```sql
 id uuid PRIMARY KEY default gen_random_uuid()
 email text UNIQUE NOT NULL
@@ -378,7 +360,32 @@ created_at timestamptz default now()
 last_login timestamptz
 ```
 
-**`public.banners`** ✓
+**`public.game_whitelist`**
+```sql
+game_id            text PRIMARY KEY
+provider           text NOT NULL
+contribution_rate  numeric(4,3) NOT NULL  -- 1.0 = 100%, 0.5 = 50%, 0.0 = excluded
+rtp                numeric(5,3)
+is_active          boolean default true
+added_by           uuid  -- FK → admin_users.id
+added_at           timestamptz default now()
+```
+
+**`public.bonus_events`** ← affiliate commission engine reads this
+```sql
+id                   uuid PRIMARY KEY default gen_random_uuid()
+player_bonus_id      uuid NOT NULL (FK → player_bonuses.id)
+player_id            uuid NOT NULL (FK → profiles.id)
+event_type           text NOT NULL  -- 'completed' | 'expired' | 'forfeited'
+bonus_amount         numeric(12,2) NOT NULL
+total_wagered        numeric(12,2) NOT NULL
+bonus_cost           numeric(12,2) NOT NULL
+gross_gaming_revenue numeric(12,2) NOT NULL  -- placeholder: total_wagered × 0.04 until Phase 3
+ngr                  numeric(12,2) NOT NULL  -- gross_gaming_revenue - bonus_cost
+created_at           timestamptz default now()
+```
+
+**`public.banners`**
 ```sql
 id uuid PRIMARY KEY default gen_random_uuid()
 title text NOT NULL
@@ -391,116 +398,21 @@ sort_order integer default 0
 created_at timestamptz default now()
 updated_at timestamptz default now()
 ```
-**Storage:** `banners` bucket (public read). Images uploaded via `/api/admin/banners/upload`.
-
-**Auto-trigger:** `on_auth_user_created` → `handle_new_user()` → auto-creates `profiles` + `wallets`.
-**RLS:** Enabled on all tables. Players read own rows only. Sensitive tables (affiliates, admin_users, bonus_templates, affiliate_payouts) are service-role-only.
+Storage: `banners` bucket (public read). Upload via `/api/admin/banners/upload`.
 
 ---
 
-## Current File Structure
+## Key Library Modules
 
-```
-topwager/
-├── app/
-│   ├── layout.tsx
-│   ├── page.tsx                    # Lobby — includes BonusProgressWidget + ReferralBanner (mock)
-│   ├── login/page.tsx
-│   ├── register/page.tsx           # Ref code cookie capture + read-only referred-by field
-│   ├── register/confirm/page.tsx
-│   ├── account/page.tsx
-│   ├── wallet/page.tsx
-│   ├── deposit/page.tsx            # UI only — not wired
-│   ├── withdraw/page.tsx           # UI only — not wired
-│   ├── bonuses/page.tsx
-│   ├── refer/page.tsx              # Bring a Mate dashboard — mock data
-│   ├── join/[code]/page.tsx        # Tracking link → sets cookie → redirects to /register
-│   ├── slots/page.tsx
-│   ├── live/page.tsx
-│   ├── crash/page.tsx
-│   ├── jackpots/page.tsx
-│   ├── terms/page.tsx
-│   └── blocked/page.tsx
-│
-├── app/api/
-│   ├── register/complete/route.ts  # Saves phone, currency, affiliate_id after signup
-│   └── wallet/
-│       ├── balance/route.ts        # GET — returns player's current balances
-│       ├── credit/route.ts         # POST — add to balance + log transaction
-│       └── debit/route.ts          # POST — subtract from balance + log transaction
-│
-├── components/
-│   ├── Nav.tsx                     # Refer in top nav + mobile bottom nav
-│   ├── DemoBanner.tsx
-│   ├── GameCard.tsx
-│   ├── GeoGate.tsx
-│   └── GeoLanguageBar.tsx          # Legacy — not in use
-│
-├── context/
-│   ├── AuthContext.tsx
-│   ├── GeoContext.tsx
-│   └── I18nContext.tsx
-│
-├── data/
-│   ├── games.ts                    # Static placeholder data
-│   └── geoConfig.ts
-│
-├── locales/
-│   └── en.ts / sw.ts / fr.ts
-│
-├── lib/
-│   ├── supabase.ts                 # Browser Supabase client
-│   ├── supabase-server.ts          # Server Supabase client + getAuthenticatedUser()
-│   ├── wallet.ts                   # credit() / debit() / getBalance() — server-side only
-│   └── referral.ts                 # getRefCodeCookie / setRefCodeCookie helpers
-│
-├── supabase/
-│   └── phase1_migration.sql        # Phase 1 schema — already run, kept for reference
-│
-├── app/admin/
-│   ├── (auth)/login/page.tsx       # Admin login — separate from player login
-│   ├── (dashboard)/layout.tsx      # Admin shell + sidebar (role-checks via getAdminUser)
-│   ├── (dashboard)/page.tsx        # Dashboard — GGR, deposits, players, bonus liability
-│   ├── (dashboard)/transactions/   # Transaction log with filters + pagination
-│   ├── (dashboard)/players/        # Player list/search + [id] detail + manual adjustment
-│   ├── (dashboard)/bonuses/        # Bonus template list/create/toggle
-│   ├── (dashboard)/affiliates/     # Affiliate list/create
-│   ├── (dashboard)/banners/        # Banner upload/manage (content_manager role)
-│   └── _components/AdminSidebar.tsx
-│
-├── app/api/banners/route.ts            # Public — GET active banners by position (called by frontend)
-│
-├── app/api/admin/
-│   ├── auth/check/route.ts         # Verify admin role after login
-│   ├── stats/route.ts              # Dashboard aggregates
-│   ├── transactions/route.ts       # Paginated/filtered transaction log
-│   ├── players/route.ts            # Player search
-│   ├── players/[id]/route.ts       # Player detail
-│   ├── players/[id]/adjust/route.ts # Manual credit/debit (logged, requires reason)
-│   ├── bonuses/route.ts            # List + create bonus templates
-│   ├── bonuses/[id]/route.ts       # Toggle is_active
-│   ├── banners/route.ts            # List + create banners
-│   ├── banners/[id]/route.ts       # Toggle active / delete
-│   └── banners/upload/route.ts     # Upload image to Supabase Storage → returns public URL
-│
-├── lib/
-│   ├── admin-auth.ts               # getAdminUser() / hasRole() / requireAdmin()
-│   └── ...
-│
-├── middleware.ts                   # Protects /admin/* (session check, edge-safe)
-├── components/PlayerShell.tsx      # Conditionally renders Nav/GeoGate/footer (skips for /admin)
-│
-│   # TO BE CREATED — Phase 2:
-│   └── lib/integrations/
-│       ├── registry.ts
-│       ├── payments/
-│       │   └── flutterwave/
-│       └── games/
-│
-└── app/api/                        # TO BE CREATED — Phase 2+
-    ├── payments/
-    └── games/
-```
+| Module | Notes |
+|--------|-------|
+| `lib/wallet.ts` | `credit()` / `debit()` / `getBalance()` — server-side only. `credit()` tries `increment_balance` RPC first, falls back to read-then-write (RPC not yet in Supabase — fallback is active; replace before high-volume launch). |
+| `lib/supabase.ts` | Browser Supabase client |
+| `lib/supabase-server.ts` | Server Supabase client + `getAuthenticatedUser()` |
+| `lib/admin-auth.ts` | `getAdminUser()` / `hasRole()` / `requireAdmin()` |
+| `lib/referral.ts` | `getRefCodeCookie()` / `setRefCodeCookie()` — first-touch attribution, never overwritten |
+| `middleware.ts` | Protects `/admin/*` — session check, edge-safe |
+| `components/PlayerShell.tsx` | Wraps player layout (Nav, GeoGate, footer) — skipped for `/admin` routes |
 
 ---
 
@@ -517,7 +429,7 @@ type AuthUser = {
   cashBalance: number
   bonusBalance: number
   pendingWithdrawal: number
-  affiliateId?: string              // to be added to AuthContext
+  affiliateId?: string
 }
 ```
 
@@ -527,11 +439,10 @@ type AuthUser = {
 
 ## Geo System
 
-- IP detection: `ipapi.co/json/` — client-side, UX only
+- IP detection: `ipapi.co/json/` — client-side, UX only (VPN-spoofable by design at this stage)
 - Manual override: `tw_country_manual` in localStorage
 - Blocked countries: redirect to `/blocked`
-- **All financial API routes enforce country server-side independently**
-- localStorage: `tw_country_manual`, `tw_lang`
+- All financial API routes enforce country server-side independently
 
 ---
 
@@ -574,159 +485,66 @@ Success green:         #5DE898
 Top: `Home / Slots / Live / Crash (HOT) / Jackpots / Promos (NEW) / Refer (500%)`
 Mobile bottom: `Home · Refer · [TW] · Wallet · Account`
 
-Note: Casino/Slots was removed from the mobile bottom nav and replaced with Refer. Slots is still reachable via the top nav tabs. Decision: Bring a Mate is a key revenue driver and should be one tap away on mobile.
+Refer replaced Casino/Slots in the mobile bottom nav — it's a primary revenue driver and needs one tap. Slots is still reachable via the top nav.
 
 ---
 
-## Known Bugs / TODOs in Existing Code
+## Known Issues / Pre-launch TODOs
 
-- `register/page.tsx` — phone, currency, affiliate_id ARE now saved via `/api/register/complete` ✓ — but the write-once guard uses `phone IS NULL`, so test accounts created before this route existed won't get affiliate_id persisted on re-registration attempts
-- `account/page.tsx` — profile update, KYC, password change, 2FA, deposit limits not wired
+- `lib/wallet.ts` — `credit()` always falls back to read-then-write (RPC `increment_balance` not created in Supabase yet). Replace with atomic RPC before go-live.
 - `AuthContext.tsx` — `emailRedirectTo` not set to production domain
-- `GeoContext.tsx` — IP check client-side only, VPN-spoofable
+- `account/page.tsx` — profile update, KYC, password change, 2FA, deposit limits not wired
+- `refer/page.tsx` — all data mock/static; needs `GET /api/affiliates/me`, `/referrals`, `/earnings`
+- `page.tsx` — `MOCK_ACTIVE_BONUS` and `MOCK_HAS_REFERRED` are static flags — replace with real API calls
 - `page.tsx` — game thumbnails are placeholders
-- `refer/page.tsx` — all data is mock/static (ref code, referees, earnings, bonus WR) — see TODO comments in file
-- `page.tsx` — `MOCK_ACTIVE_BONUS` and `MOCK_HAS_REFERRED` are static flags — replace with real API calls once bonus engine and affiliate API routes are live
-- `lib/wallet.ts` — `credit()` uses RPC `increment_balance` with a direct-update fallback. The RPC does not yet exist in Supabase — it will always fall back to the read-then-write path. Safe for now; replace with RPC before go-live for full atomicity.
+- `deposit/page.tsx`, `withdraw/page.tsx` — UI only, not wired to payment provider
 
 ---
 
-## Build Sequence — Follow This Order
+## Build Sequence
 
-### Phase 1 — Foundation ✅ COMPLETE
-1. ✅ Schema migration — all tables live in Supabase
-2. ✅ `affiliate_id` column added to `profiles`
-3. ✅ `lib/wallet.ts` — credit / debit / getBalance
-4. ✅ `app/api/wallet/` — balance, credit, debit routes
-5. ✅ `app/api/register/complete` — saves phone, currency, affiliate_id on signup
+### ✅ Complete
+- **Phase 1:** Schema, wallet engine, wallet API routes, register/complete
+- **Phase 4:** Bonus engine (`lib/bonus/`), cron job, `game_whitelist` seeded with Aviator/Spribe
+- **Phase 5:** Full backoffice — auth, dashboard, player management, transactions, bonuses, affiliates, banner CMS
 
-### Phase 2 — Payments ← START HERE
-6. `lib/integrations/` scaffold — registry, folder structure, interfaces
-7. Flutterwave integration — implement PaymentProvider interface
-8. `app/api/payments/` — initiate, callback, webhook
-9. Wire deposit/withdraw pages
+### Phase 2 — Payments ← NEXT
+1. `lib/integrations/` scaffold — registry, folder structure, interfaces
+2. Flutterwave integration — implement `PaymentProvider` interface
+3. `app/api/payments/` — initiate, callback, webhook
+4. Wire deposit/withdraw pages
+5. **On first_deposit confirmed:** call `awardBonus()` from payment callback
+6. **In withdrawal route:** call `checkWithdrawalAllowed()` before processing
 
 ### Phase 3 — Games
-10. Verify Bitville carries Spribe before starting
-11. Bitville integration — implement GameProvider interface
-12. `app/api/games/` — session creation, callback
-13. Wire game launch from GameCard
-
-### Phase 4 — Bonus Engine
-14. Bonus template management in backoffice
-15. Bonus award logic — trigger detection, reward crediting
-16. Wagering tracking on every game round
-
-### Phase 5 — Backoffice ← IN PROGRESS
-17. ✅ Admin auth — `lib/admin-auth.ts`, `middleware.ts`, `/admin/login`, `/api/admin/auth/check`
-18. ✅ Dashboard — GGR, deposits, active players, bonus liability (`/admin`)
-19. ✅ Player management — list/search + detail + manual adjustment (`/admin/players`)
-20. ✅ Transaction log — filterable/paginated (`/admin/transactions`)
-21. ✅ Bonus template management — list/create/toggle (`/admin/bonuses`)
-22. ✅ Affiliate management — list/create (`/admin/affiliates`)
+1. Verify Bitville carries Spribe before starting
+2. Bitville integration — implement `GameProvider` interface
+3. `app/api/games/` — session creation, callback
+4. **In game callback:** call `processWager()` after round completion
+5. **In game session/wager route:** call `validateBet()` before accepting bet
+6. Replace `gross_gaming_revenue` placeholder in `completeBonus.ts` with actual round revenue
+7. Add real game IDs to `game_whitelist`
 
 ### Phase 6 — Affiliate Portal
-23. Affiliate login
-24. Affiliate dashboard — players, NGR, commission
+- Affiliate login + self-serve dashboard (players, NGR, commission)
+- Commission query joins `bonus_events → profiles → affiliates`; only sum positive NGR periods
 
 ---
 
 ## Session Rules for Claude Code
 
-- **Start every session** by reading this file and stating what you understand the current state to be
-- **State which Phase and step** you are working on
+- **Start every session** by reading this file and stating the current phase and what you're working on
 - **Before creating any new file**, check if it belongs in `lib/integrations/`, `app/api/`, or an existing module
-- **Before touching the wallet**, confirm `transactions` table exists in Supabase
 - **Never** write provider-specific logic into page components or shared UI
-- **Always** use the integration interface pattern for new providers
 - **Flag immediately** if a task would require breaking an Architecture Rule
-- **End every session** with a summary of: what was built, what changed, decisions made, what next session should start with — owner will update this file before next session
+- **End every session** with a summary of what was built, decisions made, and what next session starts with — owner updates this file before next session
 
 ---
 
 ## Deploy
 
 ```bash
-cd ~/topwager
-git add -A
-git commit -m "your message"
-git push
+git add -A && git commit -m "your message" && git push
 ```
 
----
-
-## Release Notes
-
-### v0.4 — Phase 1 Backend Foundation (2026-03-30)
-
-**New lib**
-- `lib/wallet.ts` — server-side wallet engine. `credit()`, `debit()`, `getBalance()`. Writes to both `wallets` and `transactions` on every operation. Idempotency key support. Atomic debit guard using `.gte()` filter. Service role only — never imported from client code.
-- `lib/supabase-server.ts` — server-side Supabase client + `getAuthenticatedUser()` helper used by all API routes.
-
-**New API routes**
-- `GET /api/wallet/balance` — returns `{ cashBalance, bonusBalance, pendingWithdrawal }` for the authenticated player
-- `POST /api/wallet/credit` — add to player balance, log transaction. Blocked transaction types enforced per session vs service role.
-- `POST /api/wallet/debit` — subtract from player balance, log transaction. Returns `{ error: 'Insufficient balance' }` on shortfall.
-- `POST /api/register/complete` — called after `supabase.auth.signUp()`. Saves phone, currency, country, and resolves `refCode` → `affiliate_id` FK. Write-once guard via `phone IS NULL`.
-
-**Database**
-- Schema migration run: `transactions`, `game_rounds`, `affiliates`, `affiliate_payouts`, `bonus_templates`, `player_bonuses`, `admin_users` all live in Supabase.
-- `affiliate_id` column added to `profiles` with FK to `affiliates`.
-- RLS enabled on all new tables. Player-facing tables allow SELECT on own rows. Ops tables (affiliates, admin_users, bonus_templates, affiliate_payouts) are service-role-only.
-- Migration script saved to `supabase/phase1_migration.sql` for reference.
-
-**Decisions**
-- `credit()` attempts an `increment_balance` RPC first, falls back to read-then-write if RPC doesn't exist. RPC not yet created in Supabase — fallback is active. Flag for replacement before go-live.
-- Debit uses `.gte()` atomic guard — safe for current traffic, replace with Postgres RPC before high-volume launch.
-- `/api/register/complete` is non-blocking — if profile update fails, the account is still created and the error is logged. Prevents registration failures due to profile extras.
-
-**What Phase 2 needs**
-- `lib/integrations/` scaffold — registry, folder structure, PaymentProvider interface
-- Flutterwave integration — implement PaymentProvider interface
-- `app/api/payments/` — initiate deposit, handle callback, verify webhook
-- Wire deposit/withdraw pages to the payment API
-
----
-
-### v0.3 — Bring a Mate / Referral Programme (2026-03-30)
-
-**New pages**
-- `/refer` — Player-facing Bring a Mate dashboard. Sections: referral link display with copy + WhatsApp share + QR code; earnings summary (all-time / this month / pending, split flat reward vs revenue share); active bonus wagering progress bar; anonymised referee pipeline table (P-001, P-002… with status: Registered / Deposited / Playing / Rewarded). Auth-gated — redirects to login if not signed in. All data is mock/static pending backend.
-- `/join/[code]` — Clean tracking link format for sharing. Sets `ref_code` cookie (30-day, first-touch) and redirects to `/register` via `router.replace` — referral code never visible in final URL.
-
-**Updated pages**
-- `/register` — Referral code now captured from URL `?ref=CODE` param and stored in a first-party cookie (`ref_code`, 30-day, SameSite=Lax). Cookie is read on mount so the code persists across sessions. A read-only "Referred by" badge is shown in the form when a code is present. The promo code field is hidden when a ref code is active (they are mutually exclusive in the UI).
-- Lobby (`/`) — Added compact bonus wagering progress widget above the game grid for logged-in users with an active bonus. Added dismissible Bring a Mate promotional banner for logged-in users who haven't referred anyone yet (session-scoped dismissal).
-
-**Updated components**
-- `Nav.tsx` — `/refer` added to scrollable top nav tabs with a "500%" badge. In the mobile bottom nav, the Casino/Slots tab was replaced with Refer (Slots remains accessible via top nav tabs).
-
-**New lib**
-- `lib/referral.ts` — `getRefCodeCookie()` / `setRefCodeCookie()`. First-touch attribution: cookie is written once and never overwritten. Used by both `/register` and `/join/[code]`.
-
-**New dependency**
-- `qrcode.react` v4 — QR code generation on the `/refer` page.
-
-**Decisions**
-- First-touch attribution model: the first referrer who drives a registration gets credit, even if the player later visits via a different link.
-- Mobile bottom nav priority: Refer > Casino (Slots). Bring a Mate is a primary revenue driver and needs to be one tap away. Slots is available in the top nav scroll.
-- Referral code does not appear in the URL after redirect from `/join/[code]` — clean share links.
-- All `/refer` data is mock until Phase 1 backend (transactions table, wallet API routes) is complete and the affiliate API is built.
-
-**What to wire up next session**
-- `GET /api/affiliates/me` — return player's own referral code (will eventually come from `affiliates` table or a generated code on `profiles`)
-- `GET /api/affiliates/referrals` — return anonymised list of referred players + their status
-- `GET /api/affiliates/earnings` — all-time, this-month, pending, split by type
-- `GET /api/bonuses/active` — return active player bonus with wagered/target amounts
-- `POST /api/register/complete` — persist `refCode` to `profiles.affiliate_id` (route exists, persistence not yet implemented)
-
----
-
-## Session Log
-
-| Date | Summary |
-|------|---------|
-| 2026-03-30 | Bring a Mate / referral programme — `/refer` page, `/join/[code]` tracking route, cookie-based ref capture on register, lobby bonus widget + referral banner, nav updates. All frontend, all mock data. |
-| 2026-03-30 | Phase 1 complete — `lib/wallet.ts`, `lib/supabase-server.ts`, wallet API routes (balance/credit/debit), `/api/register/complete`. Full schema migration run in Supabase: transactions, game_rounds, affiliates, affiliate_payouts, bonus_templates, player_bonuses, admin_users. affiliate_id added to profiles. Phase 2 (Flutterwave) is next. |
-| 2026-03-30 | Phase 5 complete — Full backoffice at `/admin`. Admin auth (`lib/admin-auth.ts`, `middleware.ts`), login page, role-gated layout + sidebar. Dashboard (GGR, deposits, players, bonus liability). Transaction log (filterable, paginated). Player list/search + detail + manual adjustment (logged with reason). Bonus template management (list/create/toggle). Affiliate management (list/create with player count). `components/PlayerShell.tsx` added — root layout now admin-clean. All API routes in `app/api/admin/`. To create the first admin user: insert a row into `admin_users` in Supabase with the email of a Supabase auth account + appropriate role. |
-| 2026-03-31 | Banner CMS added — `banners` table + Supabase Storage bucket `banners` (public). Admin `/admin/banners` page with image upload, position selector, sort order, toggle active/delete. `content_manager` role added to sidebar. Public `/api/banners` route for frontend. Lobby wired to fetch `lobby_hero` banners — shows CMS images when uploaded, falls back to hardcoded carousel if none. |
+Vercel auto-deploys on push to `main` (~1 min). Run `npm run build` locally before pushing structural changes.

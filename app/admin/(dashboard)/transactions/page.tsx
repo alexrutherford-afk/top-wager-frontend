@@ -81,6 +81,11 @@ export default function TransactionsPage() {
         <p className="text-xs mt-0.5" style={{ color: '#5A7090' }}>{total.toLocaleString()} total</p>
       </div>
 
+      {/* Help */}
+      <div className="mb-4 rounded-xl border border-white/[0.06] px-4 py-2.5 text-xs" style={{ background: '#131B24', color: '#5A7090' }}>
+        Filter by type, status, and date range. <span className="text-white font-semibold">manual_credit / manual_debit</span> are ops adjustments made from the Players page. <span className="text-white font-semibold">game_debit / game_credit</span> will appear once game integration is live.
+      </div>
+
       {/* Filters */}
       <div className="mb-4 flex flex-wrap gap-2">
         <select value={type} onChange={e => setType(e.target.value)} className={SELECT}>

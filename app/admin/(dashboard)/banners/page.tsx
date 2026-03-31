@@ -16,9 +16,9 @@ interface Banner {
 }
 
 const POSITIONS = [
-  { value: 'lobby_hero', label: 'Lobby — Hero' },
-  { value: 'lobby_promo', label: 'Lobby — Promo Strip' },
-  { value: 'deposit_page', label: 'Deposit Page' },
+  { value: 'lobby_hero', label: 'Lobby — Hero', hint: 'Main carousel at the top of the lobby. Replaces the default promotional slides. Recommended size: 1200 × 400 px.' },
+  { value: 'lobby_promo', label: 'Lobby — Promo Strip', hint: 'Narrow strip below the hero carousel. Good for time-limited offers. Recommended size: 1200 × 200 px.' },
+  { value: 'deposit_page', label: 'Deposit Page', hint: 'Shown above the deposit form. Use to promote deposit bonuses. Recommended size: 800 × 200 px.' },
 ]
 
 const POSITION_LABELS: Record<string, string> = {
@@ -152,6 +152,16 @@ export default function BannersPage() {
         </button>
       </div>
 
+      {/* Help */}
+      <div className="mb-5 rounded-xl border border-white/[0.06] px-4 py-3 text-xs space-y-1.5" style={{ background: '#131B24', color: '#7A95B0' }}>
+        <p className="font-bold text-white text-sm">How banners work</p>
+        <p><span className="font-semibold" style={{ color: '#F5A623' }}>Lobby Hero</span> — replaces the default promotional carousel in the lobby. Upload here first. 1200 × 400 px recommended.</p>
+        <p><span className="font-semibold" style={{ color: '#F5A623' }}>Sort order</span> — if you upload multiple banners to the same position, lower numbers show first. Use 0, 10, 20 etc. so you have room to reorder later.</p>
+        <p><span className="font-semibold" style={{ color: '#F5A623' }}>Link URL</span> — optional. Can be a full URL (https://…) or an internal path (/deposit, /bonuses). Tapping the banner takes the player there.</p>
+        <p><span className="font-semibold" style={{ color: '#F5A623' }}>File formats</span> — JPEG, PNG, or WebP. Max 5 MB. Keep file size under 500 KB where possible for fast mobile loading.</p>
+        <p><span className="font-semibold" style={{ color: '#F5A623' }}>Activating / deactivating</span> — inactive banners are hidden from players but stay in the system. Use this to schedule ahead without deleting.</p>
+      </div>
+
       {/* Upload Form */}
       {showForm && (
         <div className="mb-6 rounded-2xl border border-white/[0.06] p-5" style={{ background: '#131B24' }}>
@@ -168,6 +178,9 @@ export default function BannersPage() {
                 <select value={form.position} onChange={e => setForm(f => ({ ...f, position: e.target.value }))} className={SELECT}>
                   {POSITIONS.map(p => <option key={p.value} value={p.value}>{p.label}</option>)}
                 </select>
+                <p className="mt-1 text-xs" style={{ color: '#3A4A5A' }}>
+                  {POSITIONS.find(p => p.value === form.position)?.hint}
+                </p>
               </div>
               <div>
                 <label className={LABEL} style={{ color: '#5A7090' }}>Link URL (optional)</label>

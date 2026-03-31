@@ -47,6 +47,7 @@ export type TransactionType =
   | 'game_credit'
   | 'bonus_credit'
   | 'bonus_debit'
+  | 'bonus_void'    // forfeited/expired bonus balance removed from ledger
   | 'manual_credit'
   | 'manual_debit'
 
