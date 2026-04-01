@@ -503,6 +503,7 @@ Crash moves to first position after Home — primary product interest in East Af
 - `page.tsx` — `MOCK_ACTIVE_BONUS` is a static flag — replace with real API call to `/api/bonuses/active` in Phase 3
 - `page.tsx` — game thumbnails are placeholders
 - `deposit/page.tsx`, `withdraw/page.tsx` — UI only, not wired to payment provider
+- **Vercel plan** — cron job `expire-bonuses` is set to run daily (`0 0 * * *`) because Hobby plan only allows daily crons. Upgrade to Vercel Pro before go-live and change back to hourly (`0 * * * *`) in `vercel.json` so bonus expiry runs properly at scale.
 
 ---
 
