@@ -4,6 +4,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 # TopWager — Claude Master Brief
 
+**Last updated: 2026-04-01 — Phase UX1 (Mobile UX improvements) complete. Phase 2 (Payments / Flutterwave) is next.**
+
+> **If you are reading this in the Claude.ai chat project:** state the last updated date above at the start of your response so the owner knows whether this file is current.
+
 Read this file at the start of every session. Do not proceed without reading it fully.
 Update this file when: schema changes, new integrations added, architectural decisions made, new pages/components created, or product decisions confirmed.
 
@@ -429,6 +433,7 @@ type AuthUser = {
   cashBalance: number
   bonusBalance: number
   pendingWithdrawal: number
+  hasDeposited: boolean   // true if cashBalance > 0 at auth load; proxy until first_deposit_at added in Phase 2
   affiliateId?: string
 }
 ```
@@ -482,10 +487,10 @@ Success green:         #5DE898
 
 ## Navigation
 
-Top: `Home / Slots / Live / Crash (HOT) / Jackpots / Promos (NEW) / Refer (500%)`
-Mobile bottom: `Home · Refer · [TW] · Wallet · Account`
+Top: `Home / Crash (HOT) / Slots / Live / Jackpots / Refer (500%)`
+Mobile bottom: `Home · Refer · [TW] · Wallet (balance) · Account`
 
-Refer replaced Casino/Slots in the mobile bottom nav — it's a primary revenue driver and needs one tap. Slots is still reachable via the top nav.
+Crash moves to first position after Home — primary product interest in East Africa. Promos removed from top nav; promotions surface via lobby hero banners (CMS-managed). Wallet tab shows player's cashBalance as a micro-label (formatted with currency abbreviation, e.g. "UGX 12.4k") when logged in.
 
 ---
 
@@ -495,7 +500,7 @@ Refer replaced Casino/Slots in the mobile bottom nav — it's a primary revenue 
 - `AuthContext.tsx` — `emailRedirectTo` not set to production domain
 - `account/page.tsx` — profile update, KYC, password change, 2FA, deposit limits not wired
 - `refer/page.tsx` — all data mock/static; needs `GET /api/affiliates/me`, `/referrals`, `/earnings`
-- `page.tsx` — `MOCK_ACTIVE_BONUS` and `MOCK_HAS_REFERRED` are static flags — replace with real API calls
+- `page.tsx` — `MOCK_ACTIVE_BONUS` is a static flag — replace with real API call to `/api/bonuses/active` in Phase 3
 - `page.tsx` — game thumbnails are placeholders
 - `deposit/page.tsx`, `withdraw/page.tsx` — UI only, not wired to payment provider
 
@@ -538,6 +543,7 @@ Refer replaced Casino/Slots in the mobile bottom nav — it's a primary revenue 
 - **Never** write provider-specific logic into page components or shared UI
 - **Flag immediately** if a task would require breaking an Architecture Rule
 - **End every session** with a summary of what was built, decisions made, and what next session starts with — owner updates this file before next session
+- **After every session**, push changes then re-upload this file to the Claude.ai TopWager project: Project files → remove old version → upload new one. Takes 30 seconds. Do not skip — Claude.ai will work off a stale brief if this isn't done.
 
 ---
 
@@ -548,3 +554,67 @@ git add -A && git commit -m "your message" && git push
 ```
 
 Vercel auto-deploys on push to `main` (~1 min). Run `npm run build` locally before pushing structural changes.
+
+---
+
+## UX Backlog
+
+Items from the UX review that are blocked on later phases. Each must be picked up
+during the relevant phase build — not deferred further.
+
+### Blocked on Phase 2 (Payments)
+
+- **STK push / payment prompt flow**: When the user taps Pay on the deposit page,
+  initiate an STK push (Safaricom) or equivalent USSD push (MTN/Airtel) via
+  Flutterwave. User should never need to open their mobile money app manually or
+  enter a paybill number. The Pay button triggers the push; the user enters PIN on
+  their phone; the app polls for confirmation.
+
+- **Deposit pending + success states**: After STK push is sent, show a clear
+  "Waiting for confirmation..." screen with a spinner. On webhook confirmation,
+  show a celebration screen: "Deposit confirmed. Your 500% bonus is now active."
+  with a CTA to the lobby. Do not drop the user on a blank page or generic
+  success toast.
+
+- **Replace hardcoded bonus caps on deposit page**: Task 3c uses hardcoded cap
+  values. In Phase 2, replace these with a single `GET /api/bonuses/eligible`
+  call on deposit page mount that returns the active template for the player's
+  market. Wire the bonus math widget to live template data.
+
+- **Wire `checkWithdrawalAllowed()` into withdrawal flow**: Already built in
+  `lib/bonus/checkWithdrawalAllowed.ts`. Must be called before processing any
+  withdrawal. Show the forfeit warning modal if a bonus is active.
+
+- **`first_deposit_at` on profiles**: Add a `first_deposit_at timestamptz` column
+  to `public.profiles`. Populate it in the payment confirmed webhook handler (only
+  if currently null). Replace the `hasDeposited: cashBalance > 0` proxy in
+  `AuthContext.tsx` with this field. Also add `first_deposit_at` to the `AuthUser`
+  type and update the CLAUDE.md schema block.
+
+### Blocked on Phase 3 (Games)
+
+- **Wire active bonus widget to real data**: Replace `MOCK_ACTIVE_BONUS` in
+  `app/page.tsx` with a real call to `GET /api/bonuses/active`. This route should
+  return the player's current active `player_bonus` row including `wagered_amount`,
+  `amount`, `wagering_requirement`, and `expires_at`. The lobby widget and the
+  deposit page bonus math both depend on this.
+
+- **Crash-first game lobby ordering**: Once real games are available from the
+  Bitville integration, ensure the lobby renders game categories in this order:
+  Crash / Instant → Live Casino → Slots → Table Games. Do not default to
+  alphabetical or provider order. The ordering should be configurable via a
+  `sort_order` field or category config, not hardcoded.
+
+- **$0.30 max bet enforcement — client side**: When a player has an active bonus
+  (`bonusBalance > 0`), the game launch flow must pass a `maxBet` constraint to
+  the game iframe/provider. The server-side enforcement is already in
+  `lib/bonus/validateBet.ts` — the client-side UI cap (disabling fast-spin,
+  capping the bet slider) must be wired when the game session is created.
+
+---
+
+## Session Log
+
+| Date | Summary |
+|------|---------|
+| 2026-04-01 | UX improvements (Phase UX1) — register 3-step flow (phone → OTP → password), referral offer reveal (upgraded framing when ref cookie present), deposit preset chips per market + bonus math widget (client-side, 500% hardcoded) + trust signals row + welcome banner on `?welcome=1`, lobby bonus widget redesigned (gold progress bar, WR info, "?" modal explaining WR), referral banner removed from logged-in lobby, nav reordered (Crash first, Promos tab removed), Wallet bottom tab shows cashBalance in local currency (abbreviated). `hasDeposited: boolean` added to AuthUser (proxy: cashBalance > 0). UX Backlog added to CLAUDE.md. Post-registration redirects to `/deposit?welcome=1`. |

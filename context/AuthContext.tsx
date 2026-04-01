@@ -15,6 +15,7 @@ export type AuthUser = {
   cashBalance: number;
   bonusBalance: number;
   pendingWithdrawal: number;
+  hasDeposited: boolean; // true if cashBalance > 0 at time of auth load; proxy until first_deposit_at added in Phase 2
 };
 
 type AuthContextType = {
@@ -50,6 +51,7 @@ async function fetchPlayerData(userId: string, email: string): Promise<AuthUser 
   const profile = profileRes.data;
   const wallet  = walletRes.data;
 
+  const cashBalance = wallet?.cash_balance ?? 0;
   return {
     id:                 userId,
     email,
@@ -58,9 +60,10 @@ async function fetchPlayerData(userId: string, email: string): Promise<AuthUser 
     currency:           profile.currency ?? 'EUR',
     kycStatus:          profile.kyc_status ?? 'not_submitted',
     vipLevel:           profile.vip_level ?? 0,
-    cashBalance:        wallet?.cash_balance        ?? 0,
+    cashBalance,
     bonusBalance:       wallet?.bonus_balance       ?? 0,
     pendingWithdrawal:  wallet?.pending_withdrawal  ?? 0,
+    hasDeposited:       cashBalance > 0,
   };
 }
 

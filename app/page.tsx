@@ -13,8 +13,6 @@ const MOCK_ACTIVE_BONUS = {
   wagered: 112_400,
   target:  250_000,
 };
-// TODO: replace with real referral stats from /api/affiliates/me
-const MOCK_HAS_REFERRED = false; // false = show Bring a Mate banner
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 const fmt = (n: number) => n.toLocaleString();
@@ -298,41 +296,74 @@ const Separator = () => <div className="h-[5px] border-t border-b border-white/[
 
 // ── Bonus Progress Widget ─────────────────────────────────────────────────────
 function BonusProgressWidget() {
-  const pct = Math.min(100, Math.round((MOCK_ACTIVE_BONUS.wagered / MOCK_ACTIVE_BONUS.target) * 100));
+  const [showModal, setShowModal] = useState(false);
+  const pct       = Math.min(100, Math.round((MOCK_ACTIVE_BONUS.wagered / MOCK_ACTIVE_BONUS.target) * 100));
+  const remaining = MOCK_ACTIVE_BONUS.target - MOCK_ACTIVE_BONUS.wagered;
+
   return (
-    <div
-      className="mx-3 mt-2 rounded-2xl px-4 py-3 border"
-      style={{ background: '#131B24', borderColor: 'rgba(58,158,103,0.25)' }}
-    >
-      <div className="flex items-center justify-between mb-2">
-        <div>
-          <span className="text-[9px] font-bold uppercase tracking-widest" style={{ color: '#5A7090' }}>Active Bonus</span>
-          <p className="text-sm font-black text-white leading-tight">{MOCK_ACTIVE_BONUS.label}</p>
+    <>
+      <div
+        className="mx-3 mt-2 rounded-2xl px-4 py-3 border"
+        style={{ background: '#131B24', borderColor: 'rgba(245,166,35,0.2)' }}
+      >
+        <div className="flex items-center justify-between mb-1.5">
+          <span className="text-[9px] font-bold uppercase tracking-widest" style={{ color: '#5A7090' }}>Bonus active</span>
+          <button
+            onClick={() => setShowModal(true)}
+            className="flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-black"
+            style={{ background: 'rgba(255,255,255,0.08)', color: '#5A7090' }}
+            aria-label="What is wagering requirement?"
+          >
+            ?
+          </button>
         </div>
-        <div className="text-right">
-          <p className="text-sm font-black" style={{ color: '#F5A623' }}>
-            {MOCK_ACTIVE_BONUS.amount.toLocaleString()} UGX
-          </p>
-          <Link href="/refer" className="text-[9.5px] font-semibold" style={{ color: '#3A9E67' }}>
-            View details →
-          </Link>
+        <p className="mb-2 text-sm font-black text-white">
+          {MOCK_ACTIVE_BONUS.wagered.toLocaleString()} of {MOCK_ACTIVE_BONUS.target.toLocaleString()} UGX wagered
+        </p>
+        <div className="relative h-2.5 w-full overflow-hidden rounded-full" style={{ background: '#1A2332' }}>
+          <div
+            className="absolute left-0 top-0 h-full rounded-full transition-all duration-500"
+            style={{ width: `${pct}%`, background: '#F5A623', boxShadow: '0 0 8px rgba(245,166,35,0.45)' }}
+          />
         </div>
+        <p className="mt-1.5 text-[9.5px]" style={{ color: '#7A95B0' }}>
+          Complete{' '}
+          <span className="font-bold text-white">{remaining.toLocaleString()} UGX</span>
+          {' '}more to unlock your winnings.
+        </p>
       </div>
-      <div className="relative h-2.5 w-full overflow-hidden rounded-full" style={{ background: '#1A2332' }}>
+
+      {/* WR explanation modal */}
+      {showModal && (
         <div
-          className="absolute left-0 top-0 h-full rounded-full"
-          style={{
-            width: `${pct}%`,
-            background: 'linear-gradient(90deg, #1A5C38, #3A9E67)',
-            boxShadow: '0 0 6px rgba(58,158,103,0.45)',
-          }}
-        />
-      </div>
-      <p className="mt-1.5 text-[9px]" style={{ color: '#5A7090' }}>
-        {MOCK_ACTIVE_BONUS.wagered.toLocaleString()} / {MOCK_ACTIVE_BONUS.target.toLocaleString()} UGX wagered &nbsp;·&nbsp;
-        <span style={{ color: '#5DE898', fontWeight: 700 }}>{pct}% complete</span>
-      </p>
-    </div>
+          className="fixed inset-0 z-50 flex items-end justify-center p-4 sm:items-center"
+          style={{ background: 'rgba(0,0,0,0.72)' }}
+          onClick={() => setShowModal(false)}
+        >
+          <div
+            className="w-full max-w-sm rounded-2xl border p-5"
+            style={{ background: '#131B24', borderColor: 'rgba(255,255,255,0.1)' }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="mb-3 flex items-center justify-between">
+              <h3 className="text-sm font-black text-white">About wagering requirements</h3>
+              <button onClick={() => setShowModal(false)} className="text-sm" style={{ color: '#5A7090' }}>✕</button>
+            </div>
+            <div className="space-y-2.5 text-xs leading-relaxed" style={{ color: '#7A95B0' }}>
+              <p>Your bonus has a <strong className="text-white">wagering requirement (WR)</strong>. You need to wager the required total before the bonus converts to withdrawable cash.</p>
+              <p>The progress bar shows how much of the required wager you've completed so far.</p>
+              <p>
+                <strong className="text-white">Which games count?</strong><br />
+                Slots &amp; Crash games: 100% contribution.<br />
+                Live Casino: 10% contribution.<br />
+                Table games: excluded.
+              </p>
+              <p>Once you hit 100%, your bonus balance converts to cash and you can withdraw freely.</p>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
 
@@ -402,7 +433,6 @@ export default function LobbyPage() {
   const { isLoggedIn, user } = useAuth();
   const [activeCat, setActiveCat] = useState('all');
   const [gameTab, setGameTab] = useState('All');
-  const [referralBannerDismissed, setReferralBannerDismissed] = useState(false);
   const [heroBanners, setHeroBanners] = useState<CmsBanner[]>([]);
 
   useEffect(() => {
@@ -411,9 +441,6 @@ export default function LobbyPage() {
       .then(j => { if (j.banners?.length) setHeroBanners(j.banners) })
       .catch(() => {})
   }, []);
-
-  // Persist dismissal for the session (resets on page reload)
-  const dismissReferralBanner = () => setReferralBannerDismissed(true);
 
   const filteredGames = GAMES.filter((g) => {
     if (activeCat === 'all') return true;
@@ -433,12 +460,6 @@ export default function LobbyPage() {
       {/* Bonus wagering progress — logged-in users with an active bonus only */}
       {/* TODO: replace MOCK_ACTIVE_BONUS with real data from /api/bonuses/active */}
       {isLoggedIn && user && <BonusProgressWidget />}
-
-      {/* Bring a Mate referral banner — logged-in users who haven't referred anyone yet */}
-      {/* TODO: replace MOCK_HAS_REFERRED with real check from /api/affiliates/me */}
-      {isLoggedIn && user && !MOCK_HAS_REFERRED && !referralBannerDismissed && (
-        <ReferralBanner onDismiss={dismissReferralBanner} />
-      )}
 
       {/* Banner carousel — CMS banners when available, hardcoded fallback otherwise */}
       {heroBanners.length > 0 ? <CmsBannerCarousel banners={heroBanners} /> : <BannerCarousel />}

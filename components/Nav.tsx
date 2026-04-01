@@ -6,13 +6,18 @@ import { useAuth } from '@/context/AuthContext';
 
 const TABS = [
   { href: '/', icon: '🏠', label: 'Home' },
+  { href: '/crash', icon: '✈️', label: 'Crash', badge: 'HOT', badgeOrange: true },
   { href: '/slots', icon: '🎰', label: 'Slots' },
   { href: '/live', icon: '🃏', label: 'Live' },
-  { href: '/crash', icon: '✈️', label: 'Crash', badge: 'HOT', badgeOrange: true },
   { href: '/jackpots', icon: '🏆', label: 'Jackpots' },
-  { href: '/bonuses', icon: '🎁', label: 'Promos', badge: 'NEW', badgeOrange: false },
   { href: '/refer', icon: '🤝', label: 'Refer', badge: '500%', badgeOrange: false },
 ];
+
+function formatWalletBalance(amount: number, currency: string): string {
+  if (amount >= 1_000_000) return `${currency} ${(amount / 1_000_000).toFixed(1)}M`;
+  if (amount >= 1_000)     return `${currency} ${(amount / 1_000).toFixed(1)}k`;
+  return `${currency} ${amount.toFixed(0)}`;
+}
 
 export function Nav() {
   const { isLoggedIn, user, logout } = useAuth();
@@ -189,7 +194,9 @@ export function Nav() {
           <span className="text-[19px]">💳</span>
           <span className="text-[8.5px] font-semibold">Wallet</span>
           {isLoggedIn && user && (
-            <span className="text-[7.5px] font-bold" style={{ color: '#F5A623' }}>€{user.cashBalance.toFixed(0)}</span>
+            <span className="text-[7.5px] font-bold" style={{ color: '#F5A623' }}>
+              {formatWalletBalance(user.cashBalance, user.currency)}
+            </span>
           )}
         </Link>
         <Link
